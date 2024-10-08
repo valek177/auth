@@ -1,4 +1,4 @@
-Auth repository for authentication service
+Auth repository for authentication service.
 
 ---
 microservices course 
