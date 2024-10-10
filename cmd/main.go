@@ -6,14 +6,14 @@ import (
 	"log"
 	"net"
 
-	"github.com/valek177/auth/grpc/pkg/user_v1"
-
 	"github.com/brianvoe/gofakeit"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	"github.com/valek177/auth/grpc/pkg/user_v1"
 )
 
 const grpcPort = 50051
@@ -43,11 +43,10 @@ func main() {
 func (s *server) CreateUser(_ context.Context, req *user_v1.CreateUserRequest) (
 	*user_v1.CreateUserResponse, error,
 ) {
-	id := gofakeit.Int64()
 	log.Printf("Create new user with name %s and email %s", req.GetName(), req.GetEmail())
 
 	return &user_v1.CreateUserResponse{
-		Id: id,
+		Id: gofakeit.Int64(),
 	}, nil
 }
 
@@ -60,7 +59,7 @@ func (s *server) GetUser(_ context.Context, req *user_v1.GetUserRequest) (
 
 	return &user_v1.GetUserResponse{
 		User: &user_v1.User{
-			Id: req.GetId(),
+			Id: id,
 			UserInfo: &user_v1.UserInfo{
 				Name:  wrapperspb.String(gofakeit.Name()),
 				Email: wrapperspb.String(gofakeit.Email()),
