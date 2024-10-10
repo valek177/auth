@@ -56,7 +56,8 @@ message GetUserResponse {
 
 message UpdateUserRequest {
   int64 id = 1;
-  UserInfo user_info = 2;
+  google.protobuf.StringValue name = 2;
+  Role role = 3;
 }
 
 message DeleteUserRequest {
