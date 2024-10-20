@@ -5,21 +5,17 @@ import (
 	"database/sql"
 	"flag"
 	"log"
-	"net"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
-	"github.com/valek177/auth/internal/config"
-	"github.com/valek177/auth/internal/config/env"
+	"github.com/valek177/auth/internal/app"
 )
 
 var configPath string
@@ -38,42 +34,60 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := config.Load(configPath)
+	a, err := app.NewApp(ctx)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		log.Fatalf("failed to init app: %s", err.Error())
 	}
 
-	grpcConfig, err := env.NewGRPCConfig()
+	err = a.Run()
 	if err != nil {
-		log.Fatalf("failed to get grpc config: %v", err)
+		log.Fatalf("failed to run app: %s", err.Error())
 	}
 
-	pgConfig, err := env.NewPGConfig()
-	if err != nil {
-		log.Fatalf("failed to get pg config: %v", err)
-	}
+	////remove
 
-	lis, err := net.Listen("tcp", grpcConfig.Address())
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+	// flag.Parse()
+	// ctx := context.Background()
 
-	// Создаем пул соединений с базой данных
-	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
-	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
-	}
-	defer pool.Close()
+	// err := config.Load(configPath)
+	// if err != nil {
+	// 	log.Fatalf("failed to load config: %v", err)
+	// }
 
-	s := grpc.NewServer()
-	reflection.Register(s)
-	user_v1.RegisterUserV1Server(s, &server{pool: pool})
+	// grpcConfig, err := env.NewGRPCConfig()
+	// if err != nil {
+	// 	log.Fatalf("failed to get grpc config: %v", err)
+	// }
 
-	log.Printf("server listening at %v", lis.Addr())
+	// pgConfig, err := env.NewPGConfig()
+	// if err != nil {
+	// 	log.Fatalf("failed to get pg config: %v", err)
+	// }
 
-	if err = s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	// lis, err := net.Listen("tcp", grpcConfig.Address())
+	// if err != nil {
+	// 	log.Fatalf("failed to listen: %v", err)
+	// }
+
+	// // Создаем пул соединений с базой данных
+	// pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
+	// if err != nil {
+	// 	log.Fatalf("failed to connect to database: %v", err)
+	// }
+	// defer pool.Close()
+
+	// userRepo := authRepository.NewRepository(pool)
+	// userSrv := authService.NewService(userRepo)
+
+	// s := grpc.NewServer()
+	// reflection.Register(s)
+	// user_v1.RegisterUserV1Server(s, userAPI.NewImplementation(userSrv))
+
+	// log.Printf("server listening at %v", lis.Addr())
+
+	// if err = s.Serve(lis); err != nil {
+	// 	log.Fatalf("failed to serve: %v", err)
+	// }
 }
 
 // CreateUser creates new user with specified parameters
