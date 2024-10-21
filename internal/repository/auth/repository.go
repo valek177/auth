@@ -5,7 +5,6 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/valek177/auth/internal/client/db"
 	"github.com/valek177/auth/internal/model"
@@ -26,11 +25,11 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository creates new repository object
-func NewRepository(db *pgxpool.Pool) repository.AuthRepository {
+func NewRepository(db db.Client) repository.AuthRepository {
 	return &repo{db: db}
 }
 
@@ -80,8 +79,7 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	var user modelRepo.User
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.UserInfo.Name,
-		&user.UserInfo.Email, &user.UserInfo.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		return nil, err
 	}
