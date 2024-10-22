@@ -10,6 +10,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -34,7 +35,8 @@ type server struct {
 
 func main() {
 	flag.Parse()
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	err := config.Load(configPath)
 	if err != nil {
@@ -88,13 +90,13 @@ func (s *server) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest)
 
 	query, args, err := builderInsert.ToSql()
 	if err != nil {
-		log.Fatalf("failed to build query: %v", err)
+		return nil, errors.Errorf("failed to build query: %v", err)
 	}
 
 	var userID int64
 	err = s.pool.QueryRow(ctx, query, args...).Scan(&userID)
 	if err != nil {
-		log.Fatalf("failed to insert user: %v", err)
+		return nil, errors.Errorf("failed to insert user: %v", err)
 	}
 
 	log.Printf("inserted user with id: %d", userID)
@@ -119,7 +121,7 @@ func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (
 
 	query, args, err := builderSelectOne.ToSql()
 	if err != nil {
-		log.Fatalf("failed to build query: %v", err)
+		return nil, errors.Errorf("failed to build query: %v", err)
 	}
 
 	var name, email, role string
@@ -129,7 +131,7 @@ func (s *server) GetUser(ctx context.Context, req *user_v1.GetUserRequest) (
 	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &role, &createdAt,
 		&updatedAt)
 	if err != nil {
-		log.Fatalf("failed to select users: %v", err)
+		return nil, errors.Errorf("failed to select users: %v", err)
 	}
 
 	log.Printf("id: %d, name: %s, email: %s, role: %s, created_at: %v, updated_at: %v\n",
@@ -169,12 +171,12 @@ func (s *server) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest)
 
 	query, args, err := builderUpdate.ToSql()
 	if err != nil {
-		log.Fatalf("failed to build query: %v", err)
+		return nil, errors.Errorf("failed to build query: %v", err)
 	}
 
 	_, err = s.pool.Exec(ctx, query, args...)
 	if err != nil {
-		log.Fatalf("failed to update user: %v", err)
+		return nil, errors.Errorf("failed to update user: %v", err)
 	}
 
 	log.Printf("updated user with id: %d", id)
@@ -194,12 +196,12 @@ func (s *server) DeleteUser(ctx context.Context, req *user_v1.DeleteUserRequest)
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {
-		log.Fatalf("failed to build query: %v", err)
+		return nil, errors.Errorf("failed to build query: %v", err)
 	}
 
 	_, err = s.pool.Exec(ctx, query, args...)
 	if err != nil {
-		log.Fatalf("failed to delete user: %v", err)
+		return nil, errors.Errorf("failed to delete user: %v", err)
 	}
 
 	log.Printf("deleted user with id: %d", id)
