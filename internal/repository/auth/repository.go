@@ -106,7 +106,7 @@ func (r *repo) UpdateUser(ctx context.Context, user *model.User) error {
 		QueryRaw: query,
 	}
 
-	if err = r.db.DB().QueryRowContext(ctx, q, args...); err != nil {
+	if _, err = r.db.DB().ExecContext(ctx, q, args...); err != nil {
 		return err
 	}
 
@@ -129,7 +129,7 @@ func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 		QueryRaw: query,
 	}
 
-	if err = r.db.DB().QueryRowContext(ctx, q, args...); err != nil {
+	if _, err = r.db.DB().ExecContext(ctx, q, args...); err != nil {
 		return err
 	}
 
