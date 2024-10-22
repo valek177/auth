@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 
@@ -34,11 +33,11 @@ func NewRepository(db db.Client) repository.AuthRepository {
 }
 
 // CreateUser creates new user with specified parameters
-func (r *repo) CreateUser(ctx context.Context, user *model.User) (int64, error) {
+func (r *repo) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, error) {
 	builderInsert := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
 		Columns(nameColumn, emailColumn, roleColumn).
-		Values(user.UserInfo.Name, user.UserInfo.Email, user.UserInfo.Role).
+		Values(newUser.Name, newUser.Email, newUser.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
@@ -88,13 +87,18 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 }
 
 // UpdateUser updates user info by id
-func (r *repo) UpdateUser(ctx context.Context, user *model.User) error {
+func (r *repo) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error {
+	// TODO check nil
 	builderUpdate := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Set(nameColumn, user.UserInfo.Name).
-		Set(roleColumn, user.UserInfo.Role).
-		Set(updatedAtColumn, time.Now()).
-		Where(sq.Eq{idColumn: user.ID})
+		// Set(nameColumn, updateUserInfo.Name).
+		// Set(roleColumn, updateUserInfo.Role).
+		// Set(updatedAtColumn, time.Now()).
+		Where(sq.Eq{idColumn: updateUserInfo.ID})
+
+	if updateUserInfo.Name != "" { // nil!
+		builderUpdate = builderUpdate.Set(nameColumn, updateUserInfo.Name)
+	}
 
 	query, args, err := builderUpdate.ToSql()
 	if err != nil {

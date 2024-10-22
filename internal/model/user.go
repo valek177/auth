@@ -5,17 +5,26 @@ import (
 	"time"
 )
 
-// User contains user settings
-type User struct {
-	ID        int64         `db: "id"`
-	UserInfo  UserInfo      `db: ""`
-	CreatedAt time.Time     `db: "created_at"`
-	UpdatedAt *sql.NullTime `db: "updated_at"`
+type NewUser struct {
+	Name            string
+	Email           string
+	Password        string
+	PasswordConfirm string
+	Role            string
 }
 
-// UserInfo contains user info
-type UserInfo struct {
-	Name  string `db: "name"`
-	Email string `db: "email"`
-	Role  string `db: "role"`
+type UpdateUserInfo struct {
+	ID   int64
+	Name string
+	Role string
+}
+
+// User contains user settings
+type User struct {
+	ID        int64
+	Name      string
+	Email     string
+	Role      string
+	CreatedAt time.Time
+	UpdatedAt sql.NullTime
 }

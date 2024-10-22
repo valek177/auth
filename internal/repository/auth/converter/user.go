@@ -5,21 +5,14 @@ import (
 	modelRepo "github.com/valek177/auth/internal/repository/auth/model"
 )
 
-// ToUserFromRepo converts user from repository model to internal model
+// ToUserFromRepo converts user from repository model to service model
 func ToUserFromRepo(user *modelRepo.User) *model.User {
 	return &model.User{
 		ID:        user.ID,
-		UserInfo:  ToUserInfoFromRepo(&user.UserInfo),
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
-	}
-}
-
-// ToUserInfoFromRepo converts user info from repository model to internal model
-func ToUserInfoFromRepo(userInfo *modelRepo.UserInfo) model.UserInfo {
-	return model.UserInfo{
-		Name:  userInfo.Name,
-		Email: userInfo.Email,
-		Role:  userInfo.Role,
 	}
 }

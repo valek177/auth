@@ -18,7 +18,7 @@ func (i *Implementation) GetUser(ctx context.Context, req *user_v1.GetUserReques
 	}
 
 	log.Printf("id: %d, name: %s, email: %s, role: %s, created_at: %v, updated_at: %v\n",
-		userObj.ID, userObj.UserInfo.Name, userObj.UserInfo.Email, userObj.UserInfo.Role,
+		userObj.ID, userObj.Name, userObj.Email, userObj.Role,
 		userObj.CreatedAt, userObj.UpdatedAt)
 
 	return &user_v1.GetUserResponse{

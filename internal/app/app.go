@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"flag"
 	"log"
 	"net"
 
@@ -13,6 +14,12 @@ import (
 	"github.com/valek177/auth/internal/closer"
 	"github.com/valek177/auth/internal/config"
 )
+
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+}
 
 type App struct {
 	serviceProvider *serviceProvider
@@ -57,7 +64,9 @@ func (a *App) initDeps(ctx context.Context) error {
 }
 
 func (a *App) initConfig(_ context.Context) error {
-	err := config.Load("local.env")
+	flag.Parse()
+
+	err := config.Load(configPath)
 	if err != nil {
 		return err
 	}
