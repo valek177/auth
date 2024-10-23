@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	"github.com/valek177/auth/internal/converter"
 	"github.com/valek177/auth/internal/model"
 )
 
@@ -17,6 +18,12 @@ func (s *serv) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, e
 		}
 
 		_, errTx = s.authRepository.GetUser(ctx, id)
+		if errTx != nil {
+			return errTx
+		}
+
+		_, errTx = s.logRepository.CreateRecord(ctx,
+			converter.ToRecordRepoFromService(id, "create"))
 		if errTx != nil {
 			return errTx
 		}

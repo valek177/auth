@@ -13,6 +13,7 @@ import (
 	"github.com/valek177/auth/internal/config/env"
 	"github.com/valek177/auth/internal/repository"
 	authRepository "github.com/valek177/auth/internal/repository/auth"
+	logRepo "github.com/valek177/auth/internal/repository/log"
 	"github.com/valek177/auth/internal/service"
 	authService "github.com/valek177/auth/internal/service/auth"
 )
@@ -24,6 +25,7 @@ type serviceProvider struct {
 	dbClient       db.Client
 	txManager      db.TxManager
 	authRepository repository.AuthRepository
+	logRepository  repository.LogRepository
 
 	authService service.AuthService
 
@@ -95,10 +97,19 @@ func (s *serviceProvider) AuthRepository(ctx context.Context) repository.AuthRep
 	return s.authRepository
 }
 
+func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
+	if s.logRepository == nil {
+		s.logRepository = logRepo.NewRepository(s.DBClient(ctx))
+	}
+
+	return s.logRepository
+}
+
 func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
 	if s.authService == nil {
 		s.authService = authService.NewService(
 			s.AuthRepository(ctx),
+			s.LogRepository(ctx),
 			s.TxManager(ctx),
 		)
 	}

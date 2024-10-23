@@ -49,7 +49,11 @@ enum Role {
 }
 
 message CreateUserRequest {
-  NewUser new_user = 1;
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string password_confirm = 4;
+  Role role = 5;
 }
 
 message CreateUserResponse {
@@ -65,7 +69,9 @@ message GetUserResponse {
 }
 
 message UpdateUserRequest {
-  UpdateUserInfo updated_user = 1;
+  int64 id = 1;
+  google.protobuf.StringValue name = 2;
+  Role role = 3;
 }
 
 message DeleteUserRequest {

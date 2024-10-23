@@ -8,15 +8,18 @@ import (
 
 type serv struct {
 	authRepository repository.AuthRepository
+	logRepository  repository.LogRepository
 	txManager      db.TxManager
 }
 
 func NewService(
 	authRepository repository.AuthRepository,
+	logRepository repository.LogRepository,
 	txManager db.TxManager,
 ) service.AuthService {
 	return &serv{
 		authRepository: authRepository,
+		logRepository:  logRepository,
 		txManager:      txManager,
 	}
 }

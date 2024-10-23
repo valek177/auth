@@ -12,7 +12,7 @@ import (
 func (i *Implementation) CreateUser(ctx context.Context, req *user_v1.CreateUserRequest) (
 	*user_v1.CreateUserResponse, error,
 ) {
-	id, err := i.authService.CreateUser(ctx, converter.ToNewUserFromNewUserV1(req.GetNewUser()))
+	id, err := i.authService.CreateUser(ctx, converter.ToNewUserFromNewUserV1(req))
 	if err != nil {
 		return nil, err
 	}

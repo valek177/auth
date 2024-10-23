@@ -15,8 +15,8 @@ type NewUser struct {
 
 type UpdateUserInfo struct {
 	ID   int64
-	Name string
-	Role string
+	Name *string
+	Role *string
 }
 
 // User contains user settings

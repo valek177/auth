@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 
@@ -88,16 +89,23 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 
 // UpdateUser updates user info by id
 func (r *repo) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error {
-	// TODO check nil
 	builderUpdate := sq.Update(tableName).
 		PlaceholderFormat(sq.Dollar).
-		// Set(nameColumn, updateUserInfo.Name).
-		// Set(roleColumn, updateUserInfo.Role).
-		// Set(updatedAtColumn, time.Now()).
 		Where(sq.Eq{idColumn: updateUserInfo.ID})
 
-	if updateUserInfo.Name != "" { // nil!
-		builderUpdate = builderUpdate.Set(nameColumn, updateUserInfo.Name)
+	isUpdated := false
+
+	if updateUserInfo.Name != nil {
+		builderUpdate = builderUpdate.Set(nameColumn, *updateUserInfo.Name)
+		isUpdated = true
+	}
+	if updateUserInfo.Role != nil {
+		builderUpdate = builderUpdate.Set(roleColumn, *updateUserInfo.Role)
+		isUpdated = true
+	}
+
+	if !isUpdated {
+		return errors.New("unable to update users: empty request")
 	}
 
 	query, args, err := builderUpdate.ToSql()

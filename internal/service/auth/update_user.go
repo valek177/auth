@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	"github.com/valek177/auth/internal/converter"
 	"github.com/valek177/auth/internal/model"
 )
 
@@ -11,6 +12,12 @@ func (s *serv) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserI
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 		errTx = s.authRepository.UpdateUser(ctx, updateUserInfo)
+		if errTx != nil {
+			return errTx
+		}
+
+		_, errTx = s.logRepository.CreateRecord(ctx,
+			converter.ToRecordRepoFromService(updateUserInfo.ID, "update"))
 		if errTx != nil {
 			return errTx
 		}

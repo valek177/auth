@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"log"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
@@ -33,20 +35,35 @@ func ToUserInfoFromService(user *model.User) *user_v1.UserInfo {
 }
 
 // ToNewUserFromUserV1 converts user protobuf object to model
-func ToNewUserFromNewUserV1(newUser *user_v1.NewUser) *model.NewUser {
+func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
 	return &model.NewUser{
-		Name:            newUser.Name,
-		Email:           newUser.Email,
-		Password:        newUser.Password,
-		PasswordConfirm: newUser.PasswordConfirm,
-		Role:            newUser.Role.String(),
+		Name:            req.Name,
+		Email:           req.Email,
+		Password:        req.Password,
+		PasswordConfirm: req.PasswordConfirm,
+		Role:            req.Role.String(),
 	}
 }
 
-func ToUpdateUserInfoFromV1(updateUserInfo *user_v1.UpdateUserInfo) *model.UpdateUserInfo {
+func ToUpdateUserInfoFromV1(req *user_v1.UpdateUserRequest) *model.UpdateUserInfo {
+	var ptrName, ptrRole *string
+
+	if req.GetName() != nil {
+		str := req.GetName().GetValue()
+		ptrName = &str
+	}
+	log.Println("role is ", req.GetRole().String(), user_v1.Role_value[req.GetRole().String()])
+	strrr := req.GetRole().String()
+	log.Println("strrr ", strrr)
+
+	if user_v1.Role_value[req.GetRole().String()] != 0 {
+		str := req.GetRole().String()
+		ptrRole = &str
+	}
+
 	return &model.UpdateUserInfo{
-		ID:   updateUserInfo.Id,
-		Name: updateUserInfo.GetName().GetValue(),
-		Role: updateUserInfo.GetRole().String(),
+		ID:   req.Id,
+		Name: ptrName,
+		Role: ptrRole,
 	}
 }

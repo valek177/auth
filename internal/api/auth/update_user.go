@@ -14,12 +14,22 @@ import (
 func (i *Implementation) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest) (
 	*emptypb.Empty, error,
 ) {
-	err := i.authService.UpdateUser(ctx, converter.ToUpdateUserInfoFromV1(req.GetUpdatedUser()))
+	isUpdated := false
+	if req.GetName() != nil {
+		isUpdated = true
+	}
+	if req.GetRole().String() != "" {
+		isUpdated = true
+	}
+	if !isUpdated {
+		return &emptypb.Empty{}, nil
+	}
+	err := i.authService.UpdateUser(ctx, converter.ToUpdateUserInfoFromV1(req))
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("updated user with id: %d", req.GetUpdatedUser().GetId())
+	log.Printf("updated user with id: %d", req.GetId())
 
 	return &emptypb.Empty{}, nil
 }
