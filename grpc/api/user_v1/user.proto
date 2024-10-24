@@ -28,20 +28,6 @@ message User {
   google.protobuf.Timestamp updated_at = 6;
 }
 
-message NewUser {
-  string name = 1;
-  string email = 2;
-  string password = 3;
-  string password_confirm = 4;
-  Role role = 5;
-}
-
-message UpdateUserInfo {
-  int64 id = 1;
-  google.protobuf.StringValue name = 2;
-  Role role = 3;
-}
-
 enum Role {
   UNKNOWN = 0;
   ADMIN = 1;
