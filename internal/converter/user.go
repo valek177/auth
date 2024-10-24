@@ -1,8 +1,6 @@
 package converter
 
 import (
-	"log"
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
@@ -45,6 +43,7 @@ func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
 	}
 }
 
+// ToUpdateUserInfoFromV1 converts user info protobuf object to model
 func ToUpdateUserInfoFromV1(req *user_v1.UpdateUserRequest) *model.UpdateUserInfo {
 	var ptrName, ptrRole *string
 
@@ -52,9 +51,6 @@ func ToUpdateUserInfoFromV1(req *user_v1.UpdateUserRequest) *model.UpdateUserInf
 		str := req.GetName().GetValue()
 		ptrName = &str
 	}
-	log.Println("role is ", req.GetRole().String(), user_v1.Role_value[req.GetRole().String()])
-	strrr := req.GetRole().String()
-	log.Println("strrr ", strrr)
 
 	if user_v1.Role_value[req.GetRole().String()] != 0 {
 		str := req.GetRole().String()
