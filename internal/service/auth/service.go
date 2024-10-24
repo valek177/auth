@@ -12,6 +12,7 @@ type serv struct {
 	txManager      db.TxManager
 }
 
+// NewService creates new service with settings
 func NewService(
 	authRepository repository.AuthRepository,
 	logRepository repository.LogRepository,

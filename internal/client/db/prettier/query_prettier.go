@@ -11,6 +11,7 @@ const (
 	PlaceholderQuestion = "?"
 )
 
+// Pretty returns string with formatted query
 func Pretty(query string, placeholder string, args ...any) string {
 	for i, param := range args {
 		var value string

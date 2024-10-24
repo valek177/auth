@@ -14,17 +14,17 @@ func Add(f ...func() error) {
 	globalCloser.Add(f...)
 }
 
-// Wait ...
+// Wait waits global closer before closing
 func Wait() {
 	globalCloser.Wait()
 }
 
-// CloseAll ...
+// CloseAll closes all connections
 func CloseAll() {
 	globalCloser.CloseAll()
 }
 
-// Closer ...
+// Closer is a struct for closing connections
 type Closer struct {
 	mu    sync.Mutex
 	once  sync.Once

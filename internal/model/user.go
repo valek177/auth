@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// NewUser is a model for created user
 type NewUser struct {
 	Name            string
 	Email           string
@@ -13,6 +14,7 @@ type NewUser struct {
 	Role            string
 }
 
+// UpdateUserInfo is a model for updated params of user
 type UpdateUserInfo struct {
 	ID   int64
 	Name *string

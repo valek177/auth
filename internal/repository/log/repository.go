@@ -29,6 +29,7 @@ func NewRepository(db db.Client) repository.LogRepository {
 	return &repo{db: db}
 }
 
+// CreateRecord creates new record in users log table
 func (r *repo) CreateRecord(ctx context.Context, record *model.Record) (int64, error) {
 	builderInsert := sq.Insert(tableName).
 		Columns(userIdColumn, actionColumn, createdAtColumn).

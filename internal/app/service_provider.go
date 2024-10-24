@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 
 	"github.com/valek177/auth/internal/api/auth"
 	"github.com/valek177/auth/internal/client/db"
@@ -36,91 +35,129 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
-func (s *serviceProvider) PGConfig() config.PGConfig {
+// PGConfig returns new PGConfig
+func (s *serviceProvider) PGConfig() (config.PGConfig, error) {
 	if s.pgConfig == nil {
 		cfg, err := env.NewPGConfig()
 		if err != nil {
-			log.Fatalf("failed to get pg config: %s", err.Error())
+			return nil, err
 		}
 
 		s.pgConfig = cfg
 	}
 
-	return s.pgConfig
+	return s.pgConfig, nil
 }
 
-func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
+// GRPCConfig returns new GRPCConfig
+func (s *serviceProvider) GRPCConfig() (config.GRPCConfig, error) {
 	if s.grpcConfig == nil {
 		cfg, err := env.NewGRPCConfig()
 		if err != nil {
-			log.Fatalf("failed to get grpc config: %s", err.Error())
+			return nil, err
 		}
 
 		s.grpcConfig = cfg
 	}
 
-	return s.grpcConfig
+	return s.grpcConfig, nil
 }
 
-func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+// DBClient returns new db client
+func (s *serviceProvider) DBClient(ctx context.Context) (db.Client, error) {
 	if s.dbClient == nil {
-		cl, err := pg.New(ctx, s.PGConfig().DSN())
+		pgConfig, err := s.PGConfig()
 		if err != nil {
-			log.Fatalf("failed to create db client: %v", err)
+			return nil, err
+		}
+		cl, err := pg.New(ctx, pgConfig.DSN())
+		if err != nil {
+			return nil, err
 		}
 
 		err = cl.DB().Ping(ctx)
 		if err != nil {
-			log.Fatalf("ping error: %s", err.Error())
+			return nil, err
 		}
 		closer.Add(cl.Close)
 
 		s.dbClient = cl
 	}
 
-	return s.dbClient
+	return s.dbClient, nil
 }
 
-func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+// TxManager returns new db TxManager
+func (s *serviceProvider) TxManager(ctx context.Context) (db.TxManager, error) {
 	if s.txManager == nil {
-		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+		dbClient, err := s.DBClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.txManager = transaction.NewTransactionManager(dbClient.DB())
 	}
 
-	return s.txManager
+	return s.txManager, nil
 }
 
-func (s *serviceProvider) AuthRepository(ctx context.Context) repository.AuthRepository {
+// AuthRepository returns new AuthRepository
+func (s *serviceProvider) AuthRepository(ctx context.Context) (repository.AuthRepository, error) {
 	if s.authRepository == nil {
-		s.authRepository = authRepository.NewRepository(s.DBClient(ctx))
+		dbClient, err := s.DBClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.authRepository = authRepository.NewRepository(dbClient)
 	}
 
-	return s.authRepository
+	return s.authRepository, nil
 }
 
-func (s *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
+// LogRepository returns new LogRepository
+func (s *serviceProvider) LogRepository(ctx context.Context) (repository.LogRepository, error) {
 	if s.logRepository == nil {
-		s.logRepository = logRepo.NewRepository(s.DBClient(ctx))
+		dbClient, err := s.DBClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.logRepository = logRepo.NewRepository(dbClient)
 	}
 
-	return s.logRepository
+	return s.logRepository, nil
 }
 
-func (s *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+// AuthService returns new AuthService
+func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService, error) {
 	if s.authService == nil {
+		authRepo, err := s.AuthRepository(ctx)
+		if err != nil {
+			return nil, err
+		}
+		logRepo, err := s.LogRepository(ctx)
+		if err != nil {
+			return nil, err
+		}
+		txManager, err := s.TxManager(ctx)
+		if err != nil {
+			return nil, err
+		}
 		s.authService = authService.NewService(
-			s.AuthRepository(ctx),
-			s.LogRepository(ctx),
-			s.TxManager(ctx),
+			authRepo, logRepo, txManager,
 		)
 	}
 
-	return s.authService
+	return s.authService, nil
 }
 
-func (s *serviceProvider) AuthImpl(ctx context.Context) *auth.Implementation {
+// AuthImpl returns new Auth Service implementation
+func (s *serviceProvider) AuthImpl(ctx context.Context) (*auth.Implementation, error) {
 	if s.authImpl == nil {
-		s.authImpl = auth.NewImplementation(s.AuthService(ctx))
+		authServ, err := s.AuthService(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.authImpl = auth.NewImplementation(authServ)
 	}
 
-	return s.authImpl
+	return s.authImpl, nil
 }

@@ -21,11 +21,13 @@ func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
 
+// App contains application object
 type App struct {
 	serviceProvider *serviceProvider
 	grpcServer      *grpc.Server
 }
 
+// NewApp creates new App object
 func NewApp(ctx context.Context) (*App, error) {
 	a := &App{}
 
@@ -37,6 +39,7 @@ func NewApp(ctx context.Context) (*App, error) {
 	return a, nil
 }
 
+// Run runs application
 func (a *App) Run() error {
 	defer func() {
 		closer.CloseAll()
@@ -84,15 +87,24 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	user_v1.RegisterUserV1Server(a.grpcServer, a.serviceProvider.AuthImpl(ctx))
+	authImpl, err := a.serviceProvider.AuthImpl(ctx)
+	if err != nil {
+		return err
+	}
+
+	user_v1.RegisterUserV1Server(a.grpcServer, authImpl)
 
 	return nil
 }
 
 func (a *App) runGRPCServer() error {
-	log.Printf("GRPC server is running on %s", a.serviceProvider.GRPCConfig().Address())
+	grpcConfig, err := a.serviceProvider.GRPCConfig()
+	if err != nil {
+		return err
+	}
+	log.Printf("GRPC server is running on %s", grpcConfig.Address())
 
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
+	list, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		return err
 	}

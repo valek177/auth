@@ -14,6 +14,7 @@ type AuthRepository interface {
 	DeleteUser(ctx context.Context, id int64) error
 }
 
+// LogRepository is interface for logging user actions
 type LogRepository interface {
 	CreateRecord(ctx context.Context, record *model.Record) (int64, error)
 }
