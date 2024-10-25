@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	PlaceholderDollar   = "$"
+	// PlaceholderDollar dollar
+	PlaceholderDollar = "$"
+	// PlaceholderQuestion question
 	PlaceholderQuestion = "?"
 )
 

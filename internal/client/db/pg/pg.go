@@ -17,6 +17,7 @@ import (
 type key string
 
 const (
+	// TxKey name
 	TxKey key = "tx"
 )
 

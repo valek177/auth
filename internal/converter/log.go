@@ -7,9 +7,9 @@ import (
 )
 
 // ToRecordRepoFromService converts params to Record model
-func ToRecordRepoFromService(userId int64, action string) *model.Record {
+func ToRecordRepoFromService(userID int64, action string) *model.Record {
 	return &model.Record{
-		UserID:    userId,
+		UserID:    userID,
 		CreatedAt: time.Now(),
 		Action:    action,
 	}

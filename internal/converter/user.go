@@ -32,7 +32,7 @@ func ToUserInfoFromService(user *model.User) *user_v1.UserInfo {
 	}
 }
 
-// ToNewUserFromUserV1 converts user protobuf object to model
+// ToNewUserFromNewUserV1 converts user protobuf object to model
 func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
 	return &model.NewUser{
 		Name:            req.Name,
