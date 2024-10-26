@@ -10,6 +10,10 @@ import (
 
 // ToUserV1FromService converts user model to protobuf object
 func ToUserV1FromService(user *model.User) *user_v1.User {
+	if user == nil {
+		return &user_v1.User{}
+	}
+
 	var updatedAt *timestamppb.Timestamp
 	if user.UpdatedAt.Valid {
 		updatedAt = timestamppb.New(user.UpdatedAt.Time)
@@ -25,6 +29,10 @@ func ToUserV1FromService(user *model.User) *user_v1.User {
 
 // ToUserInfoFromService converts user info model to protobuf object
 func ToUserInfoFromService(user *model.User) *user_v1.UserInfo {
+	if user == nil {
+		return &user_v1.UserInfo{}
+	}
+
 	return &user_v1.UserInfo{
 		Name:  wrapperspb.String(user.Name),
 		Email: wrapperspb.String(user.Email),
@@ -34,6 +42,10 @@ func ToUserInfoFromService(user *model.User) *user_v1.UserInfo {
 
 // ToNewUserFromNewUserV1 converts user protobuf object to model
 func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
+	if req == nil {
+		return &model.NewUser{}
+	}
+
 	return &model.NewUser{
 		Name:            req.Name,
 		Email:           req.Email,
@@ -45,6 +57,10 @@ func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
 
 // ToUpdateUserInfoFromV1 converts user info protobuf object to model
 func ToUpdateUserInfoFromV1(req *user_v1.UpdateUserRequest) *model.UpdateUserInfo {
+	if req == nil {
+		return &model.UpdateUserInfo{}
+	}
+
 	var ptrName, ptrRole *string
 
 	if req.GetName() != nil {

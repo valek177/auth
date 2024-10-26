@@ -7,6 +7,10 @@ import (
 
 // ToUserFromRepo converts user from repository model to service model
 func ToUserFromRepo(user *modelRepo.User) *model.User {
+	if user == nil {
+		return &model.User{}
+	}
+
 	return &model.User{
 		ID:        user.ID,
 		Name:      user.Name,

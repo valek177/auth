@@ -20,6 +20,7 @@ const (
 	nameColumn      = "name"
 	emailColumn     = "email"
 	roleColumn      = "role"
+	passwordColumn  = "password"
 	createdAtColumn = "created_at"
 	updatedAtColumn = "updated_at"
 )
@@ -37,8 +38,8 @@ func NewRepository(db db.Client) repository.AuthRepository {
 func (r *repo) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, error) {
 	builderInsert := sq.Insert(tableName).
 		PlaceholderFormat(sq.Dollar).
-		Columns(nameColumn, emailColumn, roleColumn).
-		Values(newUser.Name, newUser.Email, newUser.Role).
+		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
+		Values(newUser.Name, newUser.Email, newUser.Password, newUser.Role).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()

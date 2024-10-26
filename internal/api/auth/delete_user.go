@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
@@ -13,12 +13,15 @@ import (
 func (i *Implementation) DeleteUser(ctx context.Context, req *user_v1.DeleteUserRequest) (
 	*emptypb.Empty, error,
 ) {
-	err := i.authService.DeleteUser(ctx, req.GetId())
+	err := validateDeleteUser(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	log.Printf("deleted user with id: %d", req.GetId())
+	err = i.authService.DeleteUser(ctx, req.GetId())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	return &emptypb.Empty{}, nil
 }

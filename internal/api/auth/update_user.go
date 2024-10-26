@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"log"
 
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
@@ -14,22 +14,20 @@ import (
 func (i *Implementation) UpdateUser(ctx context.Context, req *user_v1.UpdateUserRequest) (
 	*emptypb.Empty, error,
 ) {
-	isUpdated := false
-	if req.GetName() != nil {
-		isUpdated = true
-	}
-	if req.GetRole().String() != "" {
-		isUpdated = true
-	}
-	if !isUpdated {
-		return &emptypb.Empty{}, nil
-	}
-	err := i.authService.UpdateUser(ctx, converter.ToUpdateUserInfoFromV1(req))
+	err := validateUpdateUser(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	log.Printf("updated user with id: %d", req.GetId())
+	if req.GetName() == nil && req.GetRole().String() == "" {
+		// nothing to update
+		return &emptypb.Empty{}, nil
+	}
+
+	err = i.authService.UpdateUser(ctx, converter.ToUpdateUserInfoFromV1(req))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	return &emptypb.Empty{}, nil
 }
