@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+
 	"github.com/valek177/auth/internal/config"
 )
 
