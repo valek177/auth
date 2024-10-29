@@ -73,7 +73,7 @@ func TestGetUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "success case 1",
+			name: "success case",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -95,7 +95,7 @@ func TestGetUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "service error case 1",
+			name: "service error",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -105,6 +105,19 @@ func TestGetUser(t *testing.T) {
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				mock.GetUserMock.Expect(ctx, id).Return(nil, serviceErr)
+				return mock
+			},
+		},
+		{
+			name: "error: validation error (empty request)",
+			args: args{
+				ctx: ctx,
+				req: nil,
+			},
+			want: nil,
+			err:  fmt.Errorf("unable to get user: empty request"),
+			authServiceMock: func(mc *minimock.Controller) service.AuthService {
+				mock := serviceMocks.NewAuthServiceMock(mc)
 				return mock
 			},
 		},
@@ -136,7 +149,7 @@ func TestGetUser(t *testing.T) {
 			_, err := api.GetUser(tt.args.ctx, tt.args.req)
 
 			assert.NotNil(t, err)
-			assert.ErrorContains(t, err, "service error")
+			assert.ErrorContains(t, err, tt.err.Error())
 		})
 	}
 }

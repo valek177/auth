@@ -19,11 +19,6 @@ func (i *Implementation) UpdateUser(ctx context.Context, req *user_v1.UpdateUser
 		return nil, errors.WithStack(err)
 	}
 
-	if req.GetName() == nil && req.GetRole().String() == "" {
-		// nothing to update
-		return &emptypb.Empty{}, nil
-	}
-
 	err = i.authService.UpdateUser(ctx, converter.ToUpdateUserInfoFromV1(req))
 	if err != nil {
 		return nil, errors.WithStack(err)

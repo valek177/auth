@@ -65,7 +65,7 @@ func TestCreateUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "success case 1",
+			name: "success case",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -87,7 +87,7 @@ func TestCreateUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "service error case 1",
+			name: "service error",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -97,6 +97,19 @@ func TestCreateUser(t *testing.T) {
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				mock.CreateUserMock.Expect(ctx, newUser).Return(0, serviceErr)
+				return mock
+			},
+		},
+		{
+			name: "error: validation error (empty request)",
+			args: args{
+				ctx: ctx,
+				req: nil,
+			},
+			want: nil,
+			err:  fmt.Errorf("unable to create user: empty request"),
+			authServiceMock: func(mc *minimock.Controller) service.AuthService {
+				mock := serviceMocks.NewAuthServiceMock(mc)
 				return mock
 			},
 		},
@@ -128,7 +141,7 @@ func TestCreateUser(t *testing.T) {
 			_, err := api.CreateUser(tt.args.ctx, tt.args.req)
 
 			assert.NotNil(t, err)
-			assert.ErrorContains(t, err, "service error")
+			assert.ErrorContains(t, err, tt.err.Error())
 		})
 	}
 }

@@ -12,6 +12,11 @@ func (s *serv) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, e
 	var id int64
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
+		errTx = validateCreateUser(newUser)
+		if errTx != nil {
+			return errTx
+		}
+
 		id, errTx = s.authRepository.CreateUser(ctx, newUser)
 		if errTx != nil {
 			return errTx

@@ -48,7 +48,7 @@ func TestDeleteUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "success case 1",
+			name: "success case",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -70,7 +70,7 @@ func TestDeleteUser(t *testing.T) {
 		authServiceMock authServiceMockFunc
 	}{
 		{
-			name: "service error case 1",
+			name: "service error",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -80,6 +80,19 @@ func TestDeleteUser(t *testing.T) {
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
 				mock.DeleteUserMock.Expect(ctx, id).Return(serviceErr)
+				return mock
+			},
+		},
+		{
+			name: "error: validation error (empty request)",
+			args: args{
+				ctx: ctx,
+				req: nil,
+			},
+			want: nil,
+			err:  fmt.Errorf("unable to delete user: empty request"),
+			authServiceMock: func(mc *minimock.Controller) service.AuthService {
+				mock := serviceMocks.NewAuthServiceMock(mc)
 				return mock
 			},
 		},
@@ -111,7 +124,7 @@ func TestDeleteUser(t *testing.T) {
 			_, err := api.DeleteUser(tt.args.ctx, tt.args.req)
 
 			assert.NotNil(t, err)
-			assert.ErrorContains(t, err, "service error")
+			assert.ErrorContains(t, err, tt.err.Error())
 		})
 	}
 }

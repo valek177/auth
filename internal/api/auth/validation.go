@@ -11,16 +11,6 @@ func validateCreateUser(req *user_v1.CreateUserRequest) error {
 		return errors.New("unable to create user: empty request")
 	}
 
-	if req.Name == "" {
-		return errors.New("unable to create user: name is required")
-	}
-	if req.Password == "" {
-		return errors.New("unable to create user: password is required")
-	}
-	if req.Password != req.PasswordConfirm {
-		return errors.New("unable to create user: the passwords do not match")
-	}
-
 	return nil
 }
 
