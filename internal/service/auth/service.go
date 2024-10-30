@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"github.com/valek177/auth/internal/client/db"
 	"github.com/valek177/auth/internal/repository"
 	"github.com/valek177/auth/internal/service"
+	"github.com/valek177/platform-common/pkg/client/db"
 )
 
 type serv struct {

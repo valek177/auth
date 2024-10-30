@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
-	"github.com/valek177/auth/internal/client/db"
-	dbMocks "github.com/valek177/auth/internal/client/db/mocks"
 	"github.com/valek177/auth/internal/model"
 	"github.com/valek177/auth/internal/repository"
 	repoMocks "github.com/valek177/auth/internal/repository/mocks"
 	"github.com/valek177/auth/internal/service/auth"
+	"github.com/valek177/platform-common/pkg/client/db"
+	dbMocks "github.com/valek177/platform-common/pkg/client/db/mocks"
 )
 
 func TestCreateUser(t *testing.T) {

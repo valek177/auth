@@ -4,10 +4,6 @@ import (
 	"context"
 
 	"github.com/valek177/auth/internal/api/auth"
-	"github.com/valek177/auth/internal/client/db"
-	"github.com/valek177/auth/internal/client/db/pg"
-	"github.com/valek177/auth/internal/client/db/transaction"
-	"github.com/valek177/auth/internal/closer"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/config/env"
 	"github.com/valek177/auth/internal/repository"
@@ -15,6 +11,10 @@ import (
 	logRepo "github.com/valek177/auth/internal/repository/log"
 	"github.com/valek177/auth/internal/service"
 	authService "github.com/valek177/auth/internal/service/auth"
+	"github.com/valek177/platform-common/pkg/client/db"
+	"github.com/valek177/platform-common/pkg/client/db/pg"
+	"github.com/valek177/platform-common/pkg/client/db/transaction"
+	"github.com/valek177/platform-common/pkg/closer"
 )
 
 type serviceProvider struct {
