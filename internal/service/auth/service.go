@@ -7,20 +7,23 @@ import (
 )
 
 type serv struct {
-	authRepository repository.AuthRepository
-	logRepository  repository.LogRepository
-	txManager      db.TxManager
+	authRepository  repository.AuthRepository
+	logRepository   repository.LogRepository
+	redisRepository repository.UserRedisRepository
+	txManager       db.TxManager
 }
 
 // NewService creates new service with settings
 func NewService(
 	authRepository repository.AuthRepository,
 	logRepository repository.LogRepository,
+	redisRepository repository.UserRedisRepository,
 	txManager db.TxManager,
 ) service.AuthService {
 	return &serv{
-		authRepository: authRepository,
-		logRepository:  logRepository,
-		txManager:      txManager,
+		authRepository:  authRepository,
+		logRepository:   logRepository,
+		redisRepository: redisRepository,
+		txManager:       txManager,
 	}
 }

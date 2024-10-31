@@ -18,3 +18,10 @@ type AuthRepository interface {
 type LogRepository interface {
 	CreateRecord(ctx context.Context, record *model.Record) (int64, error)
 }
+
+type UserRedisRepository interface {
+	CreateUser(ctx context.Context, user *model.User) error
+	GetUser(ctx context.Context, id int64) (*model.User, error)
+	DeleteUser(ctx context.Context, id int64) error
+	SetExpireUser(ctx context.Context, id int64) error
+}

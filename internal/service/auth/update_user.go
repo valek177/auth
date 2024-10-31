@@ -22,6 +22,18 @@ func (s *serv) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserI
 			return errTx
 		}
 
+		user, errTx := s.authRepository.GetUser(ctx, updateUserInfo.ID)
+		if errTx != nil {
+			return errTx
+		}
+
+		errTx = s.redisRepository.DeleteUser(ctx, user.ID)
+		if errTx != nil {
+			return errTx
+		}
+		s.redisRepository.CreateUser(ctx, user)
+		s.redisRepository.SetExpireUser(ctx, user.ID)
+
 		_, errTx = s.logRepository.CreateRecord(ctx,
 			converter.ToRecordRepoFromService(updateUserInfo.ID, "update"))
 		if errTx != nil {

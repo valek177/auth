@@ -22,6 +22,7 @@ func TestCreateUser(t *testing.T) {
 	t.Parallel()
 	type authRepositoryMockFunc func(mc *minimock.Controller) repository.AuthRepository
 	type logRepositoryMockFunc func(mc *minimock.Controller) repository.LogRepository
+	type redisRepositoryMockFunc func(mc *minimock.Controller) repository.UserRedisRepository
 	type txManagerMockFunc func(mc *minimock.Controller) db.TxManager
 
 	type args struct {
@@ -57,13 +58,14 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	testsSuccessful := []struct {
-		name               string
-		args               args
-		want               int64
-		err                error
-		authRepositoryMock authRepositoryMockFunc
-		logRepositoryMock  logRepositoryMockFunc
-		txManagerMock      txManagerMockFunc
+		name                string
+		args                args
+		want                int64
+		err                 error
+		authRepositoryMock  authRepositoryMockFunc
+		logRepositoryMock   logRepositoryMockFunc
+		redisRepositoryMock redisRepositoryMockFunc
+		txManagerMock       txManagerMockFunc
 	}{
 		{
 			name: "success case",
@@ -87,17 +89,29 @@ func TestCreateUser(t *testing.T) {
 				})
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
+				) (err error) {
+					return nil
+				})
+				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (err error) {
+					return nil
+				})
+				return mock
+			},
 			txManagerMock: txManagerFunc,
 		},
 	}
 	testsErrors := []struct {
-		name               string
-		args               args
-		want               int64
-		err                error
-		authRepositoryMock authRepositoryMockFunc
-		logRepositoryMock  logRepositoryMockFunc
-		txManagerMock      txManagerMockFunc
+		name                string
+		args                args
+		want                int64
+		err                 error
+		authRepositoryMock  authRepositoryMockFunc
+		logRepositoryMock   logRepositoryMockFunc
+		redisRepositoryMock redisRepositoryMockFunc
+		txManagerMock       txManagerMockFunc
 	}{
 		{
 			name: "repo error",
@@ -116,6 +130,10 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewLogRepositoryMock(mc)
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
 			txManagerMock: txManagerFunc,
 		},
 		{
@@ -132,6 +150,10 @@ func TestCreateUser(t *testing.T) {
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
 				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -158,6 +180,10 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewLogRepositoryMock(mc)
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
 			txManagerMock: txManagerFunc,
 		},
 		{
@@ -180,6 +206,10 @@ func TestCreateUser(t *testing.T) {
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
 				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -206,6 +236,10 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewLogRepositoryMock(mc)
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
 			txManagerMock: txManagerFunc,
 		},
 		{
@@ -224,6 +258,10 @@ func TestCreateUser(t *testing.T) {
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
 				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -251,6 +289,17 @@ func TestCreateUser(t *testing.T) {
 				})
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
+				) (err error) {
+					return nil
+				})
+				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (err error) {
+					return nil
+				})
+				return mock
+			},
 			txManagerMock: txManagerFunc,
 		},
 	}
@@ -262,10 +311,11 @@ func TestCreateUser(t *testing.T) {
 
 			authRepositoryMock := tt.authRepositoryMock(mc)
 			logRepositoryMock := tt.logRepositoryMock(mc)
+			redisRepositoryMock := tt.redisRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 
 			service := auth.NewService(authRepositoryMock, logRepositoryMock,
-				txManagerMock)
+				redisRepositoryMock, txManagerMock)
 
 			newID, err := service.CreateUser(tt.args.ctx, tt.args.newUser)
 
@@ -281,10 +331,11 @@ func TestCreateUser(t *testing.T) {
 
 			authRepositoryMock := tt.authRepositoryMock(mc)
 			logRepositoryMock := tt.logRepositoryMock(mc)
+			redisRepositoryMock := tt.redisRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 
 			service := auth.NewService(authRepositoryMock, logRepositoryMock,
-				txManagerMock)
+				redisRepositoryMock, txManagerMock)
 
 			_, err := service.CreateUser(tt.args.ctx, tt.args.newUser)
 

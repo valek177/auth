@@ -8,6 +8,7 @@ import (
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/gojuno/minimock/v3"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -24,6 +25,7 @@ func TestGetUser(t *testing.T) {
 	t.Parallel()
 	type authRepositoryMockFunc func(mc *minimock.Controller) repository.AuthRepository
 	type logRepositoryMockFunc func(mc *minimock.Controller) repository.LogRepository
+	type redisRepositoryMockFunc func(mc *minimock.Controller) repository.UserRedisRepository
 	type txManagerMockFunc func(mc *minimock.Controller) db.TxManager
 
 	type args struct {
@@ -49,16 +51,17 @@ func TestGetUser(t *testing.T) {
 	)
 
 	testsSuccessful := []struct {
-		name               string
-		args               args
-		want               *model.User
-		err                error
-		authRepositoryMock authRepositoryMockFunc
-		logRepositoryMock  logRepositoryMockFunc
-		txManagerMock      txManagerMockFunc
+		name                string
+		args                args
+		want                *model.User
+		err                 error
+		authRepositoryMock  authRepositoryMockFunc
+		logRepositoryMock   logRepositoryMockFunc
+		redisRepositoryMock redisRepositoryMockFunc
+		txManagerMock       txManagerMockFunc
 	}{
 		{
-			name: "success case",
+			name: "success case (get user from database)",
 			args: args{
 				ctx: ctx,
 				id:  id,
@@ -78,16 +81,70 @@ func TestGetUser(t *testing.T) {
 				mock := dbMocks.NewTxManagerMock(mc)
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
+					up1 *model.User, err error,
+				) {
+					return nil, errors.New("no user in redis")
+				})
+				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (
+					err error,
+				) {
+					return nil
+				})
+				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
+				) (err error) {
+					return nil
+				})
+				return mock
+			},
+		},
+		{
+			name: "success case (get user from redis)",
+			args: args{
+				ctx: ctx,
+				id:  id,
+			},
+			want: user,
+			err:  nil,
+			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
+				mock := repoMocks.NewAuthRepositoryMock(mc)
+				return mock
+			},
+			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
+				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			txManagerMock: func(mc *minimock.Controller) db.TxManager {
+				mock := dbMocks.NewTxManagerMock(mc)
+				return mock
+			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
+					up1 *model.User, err error,
+				) {
+					return user, nil
+				})
+				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (
+					err error,
+				) {
+					return nil
+				})
+				return mock
+			},
 		},
 	}
 	testsErrors := []struct {
-		name               string
-		args               args
-		want               *emptypb.Empty
-		err                error
-		authRepositoryMock authRepositoryMockFunc
-		logRepositoryMock  logRepositoryMockFunc
-		txManagerMock      txManagerMockFunc
+		name                string
+		args                args
+		want                *emptypb.Empty
+		err                 error
+		authRepositoryMock  authRepositoryMockFunc
+		logRepositoryMock   logRepositoryMockFunc
+		redisRepositoryMock redisRepositoryMockFunc
+		txManagerMock       txManagerMockFunc
 	}{
 		{
 			name: "repo error",
@@ -110,6 +167,15 @@ func TestGetUser(t *testing.T) {
 				mock := dbMocks.NewTxManagerMock(mc)
 				return mock
 			},
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
+					up1 *model.User, err error,
+				) {
+					return nil, errors.New("no user in redis")
+				})
+				return mock
+			},
 		},
 	}
 
@@ -120,10 +186,11 @@ func TestGetUser(t *testing.T) {
 
 			authRepositoryMock := tt.authRepositoryMock(mc)
 			logRepositoryMock := tt.logRepositoryMock(mc)
+			redisRepositoryMock := tt.redisRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 
 			service := auth.NewService(authRepositoryMock, logRepositoryMock,
-				txManagerMock)
+				redisRepositoryMock, txManagerMock)
 
 			res, err := service.GetUser(tt.args.ctx, tt.args.id)
 
@@ -139,10 +206,11 @@ func TestGetUser(t *testing.T) {
 
 			authRepositoryMock := tt.authRepositoryMock(mc)
 			logRepositoryMock := tt.logRepositoryMock(mc)
+			redisRepositoryMock := tt.redisRepositoryMock(mc)
 			txManagerMock := tt.txManagerMock(mc)
 
 			service := auth.NewService(authRepositoryMock, logRepositoryMock,
-				txManagerMock)
+				redisRepositoryMock, txManagerMock)
 
 			_, err := service.GetUser(tt.args.ctx, tt.args.id)
 

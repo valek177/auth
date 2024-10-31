@@ -15,6 +15,11 @@ func (s *serv) DeleteUser(ctx context.Context, id int64) error {
 			return errTx
 		}
 
+		errTx = s.redisRepository.DeleteUser(ctx, id)
+		if errTx != nil {
+			return errTx
+		}
+
 		_, errTx = s.logRepository.CreateRecord(ctx,
 			converter.ToRecordRepoFromService(id, "delete"))
 		if errTx != nil {
