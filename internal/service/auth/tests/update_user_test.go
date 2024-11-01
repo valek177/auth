@@ -2,10 +2,12 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/gojuno/minimock/v3"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -38,7 +40,7 @@ func TestUpdateUser(t *testing.T) {
 		name = gofakeit.Name()
 		role = user_v1.Role_USER.String()
 
-		// repoErr = fmt.Errorf("repo error")
+		repoErr = errors.New("repo error")
 
 		updateUser = &model.UpdateUserInfo{
 			ID:   id,
@@ -49,12 +51,12 @@ func TestUpdateUser(t *testing.T) {
 		res = &emptypb.Empty{}
 	)
 
-	// txManagerFunc := func(mc *minimock.Controller) db.TxManager {
-	// 	mock := dbMocks.NewTxManagerMock(mc)
-	// 	mock.ReadCommittedMock.
-	// 		Set(func(ctx context.Context, f db.Handler) error { return f(ctx) })
-	// 	return mock
-	// }
+	txManagerFunc := func(mc *minimock.Controller) db.TxManager {
+		mock := dbMocks.NewTxManagerMock(mc)
+		mock.ReadCommittedMock.
+			Set(func(ctx context.Context, f db.Handler) error { return f(ctx) })
+		return mock
+	}
 
 	testsSuccessful := []struct {
 		name                string
@@ -120,110 +122,115 @@ func TestUpdateUser(t *testing.T) {
 		redisRepositoryMock redisRepositoryMockFunc
 		txManagerMock       txManagerMockFunc
 	}{
-		// {
-		// 	name: "repo error",
-		// 	args: args{
-		// 		ctx: ctx,
-		// 		req: updateUser,
-		// 	},
-		// 	want: nil,
-		// 	err:  repoErr,
-		// 	authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-		// 		mock := repoMocks.NewAuthRepositoryMock(mc)
-		// 		mock.UpdateUserMock.Expect(ctx, updateUser).Return(repoErr)
-		// 		return mock
-		// 	},
-		// 	logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
-		// 		mock := repoMocks.NewLogRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// 	txManagerMock: txManagerFunc,
-		// 	redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
-		// 		mock := repoMocks.NewUserRedisRepositoryMock(mc)
-		// 		// mock.DeleteUserMock.Expect(ctx, id).Return(nil)
-		// 		return mock
-		// 	},
-		// },
-		// {
-		// 	name: "error: validation error (empty model)",
-		// 	args: args{
-		// 		ctx: ctx,
-		// 		req: nil,
-		// 	},
-		// 	want: nil,
-		// 	err:  fmt.Errorf("unable to update user: empty model"),
-		// 	authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-		// 		mock := repoMocks.NewAuthRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// 	logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
-		// 		mock := repoMocks.NewLogRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// 	txManagerMock: txManagerFunc,
-		// 	redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
-		// 		mock := repoMocks.NewUserRedisRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// },
-		// {
-		// 	name: "error: validation error (nothing to update)",
-		// 	args: args{
-		// 		ctx: ctx,
-		// 		req: &model.UpdateUserInfo{
-		// 			ID:   id,
-		// 			Name: nil,
-		// 			Role: nil,
-		// 		},
-		// 	},
-		// 	want: nil,
-		// 	err:  fmt.Errorf("unable to update user: nothing to update"),
-		// 	authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-		// 		mock := repoMocks.NewAuthRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// 	logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
-		// 		mock := repoMocks.NewLogRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// 	txManagerMock: txManagerFunc,
-		// 	redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
-		// 		mock := repoMocks.NewUserRedisRepositoryMock(mc)
-		// 		return mock
-		// 	},
-		// },
-		// {
-		// 	name: "repo error: create record",
-		// 	args: args{
-		// 		ctx: ctx,
-		// 		req: updateUser,
-		// 	},
-		// 	want: nil,
-		// 	err:  fmt.Errorf("create record on update error"),
-		// 	authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
-		// 		mock := repoMocks.NewAuthRepositoryMock(mc)
-		// 		mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
-		// 		mock.GetUserMock.Expect(ctx, id).Return(nil, nil)
-		// 		return mock
-		// 	},
-		// 	logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
-		// 		mock := repoMocks.NewLogRepositoryMock(mc)
-		// 		mock.CreateRecordMock.Set(func(ctx context.Context,
-		// 			record *model.Record,
-		// 		) (i1 int64, err error) {
-		// 			return 0, fmt.Errorf("create record on update error")
-		// 		})
-		// 		return mock
-		// 	},
-		// 	txManagerMock: txManagerFunc,
-		// 	redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
-		// 		mock := repoMocks.NewUserRedisRepositoryMock(mc)
-		// 		mock.DeleteUserMock.Expect(ctx, id).Return(nil)
-		// 		mock.CreateUserMock.Expect(ctx, nil).Return(nil)
-		// 		mock.SetExpireUserMock.Expect(ctx, id).Return(nil)
-		// 		return mock
-		// 	},
-		// },
+		{
+			name: "repo error",
+			args: args{
+				ctx: ctx,
+				req: updateUser,
+			},
+			want: nil,
+			err:  repoErr,
+			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
+				mock := repoMocks.NewAuthRepositoryMock(mc)
+				mock.UpdateUserMock.Expect(ctx, updateUser).Return(repoErr)
+				return mock
+			},
+			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
+				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			txManagerMock: txManagerFunc,
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
+		},
+		{
+			name: "error: validation error (empty model)",
+			args: args{
+				ctx: ctx,
+				req: nil,
+			},
+			want: nil,
+			err:  fmt.Errorf("unable to update user: empty model"),
+			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
+				mock := repoMocks.NewAuthRepositoryMock(mc)
+				return mock
+			},
+			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
+				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			txManagerMock: txManagerFunc,
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
+		},
+		{
+			name: "error: validation error (nothing to update)",
+			args: args{
+				ctx: ctx,
+				req: &model.UpdateUserInfo{
+					ID:   id,
+					Name: nil,
+					Role: nil,
+				},
+			},
+			want: nil,
+			err:  fmt.Errorf("unable to update user: nothing to update"),
+			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
+				mock := repoMocks.NewAuthRepositoryMock(mc)
+				return mock
+			},
+			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
+				mock := repoMocks.NewLogRepositoryMock(mc)
+				return mock
+			},
+			txManagerMock: txManagerFunc,
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				return mock
+			},
+		},
+		{
+			name: "repo error: create record",
+			args: args{
+				ctx: ctx,
+				req: updateUser,
+			},
+			want: nil,
+			err:  fmt.Errorf("create record on update error"),
+			authRepositoryMock: func(mc *minimock.Controller) repository.AuthRepository {
+				mock := repoMocks.NewAuthRepositoryMock(mc)
+				mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
+				mock.GetUserMock.Expect(ctx, id).Return(&model.User{}, nil)
+				return mock
+			},
+			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
+				mock := repoMocks.NewLogRepositoryMock(mc)
+				mock.CreateRecordMock.Set(func(ctx context.Context,
+					record *model.Record,
+				) (i1 int64, err error) {
+					return 0, fmt.Errorf("create record on update error")
+				})
+				return mock
+			},
+			txManagerMock: txManagerFunc,
+			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
+				mock := repoMocks.NewUserRedisRepositoryMock(mc)
+				mock.DeleteUserMock.Set(func(ctx context.Context, id int64) (err error) {
+					return nil
+				})
+				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User) (err error) {
+					return nil
+				})
+				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (err error) {
+					return nil
+				})
+				return mock
+			},
+		},
 	}
 
 	for _, tt := range testsSuccessful {
