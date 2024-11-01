@@ -92,22 +92,27 @@ func NewRedisConfig() (*redisConfig, error) {
 	}, nil
 }
 
+// Address returns address
 func (cfg *redisConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }
 
+// ConnectionTimeout returns timeout of connection
 func (cfg *redisConfig) ConnectionTimeout() time.Duration {
 	return cfg.connectionTimeout
 }
 
+// MaxIdle returns max idle
 func (cfg *redisConfig) MaxIdle() int {
 	return cfg.maxIdle
 }
 
+// IdleTimeout returns idle timeout
 func (cfg *redisConfig) IdleTimeout() time.Duration {
 	return cfg.idleTimeout
 }
 
+// ElementTTL return TTL of record in redis
 func (cfg *redisConfig) ElementTTL() time.Duration {
 	return cfg.elementTTL
 }

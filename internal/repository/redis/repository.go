@@ -43,6 +43,7 @@ func (r *repo) CreateUser(ctx context.Context, user *model.User) error {
 	return nil
 }
 
+// GetUser returns user from redis
 func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	idStr := strconv.FormatInt(id, 10)
 	values, err := r.cl.HGetAll(ctx, idStr)
@@ -63,6 +64,7 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRedisRepo(&userRedis), nil
 }
 
+// DeleteUser deletes user in redis
 func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 	idStr := strconv.FormatInt(id, 10)
 
@@ -74,6 +76,7 @@ func (r *repo) DeleteUser(ctx context.Context, id int64) error {
 	return nil
 }
 
+// SetExpireUser sets expire time of user
 func (r *repo) SetExpireUser(ctx context.Context, id int64) error {
 	idStr := strconv.FormatInt(id, 10)
 

@@ -162,6 +162,7 @@ func (s *serviceProvider) RedisClient() (cache.RedisClient, error) {
 	return s.redisClient, nil
 }
 
+// UserRedisRepository returns redis repository
 func (s *serviceProvider) UserRedisRepository() (
 	repository.UserRedisRepository, error,
 ) {
