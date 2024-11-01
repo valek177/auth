@@ -1,5 +1,6 @@
 package model
 
+// UserRedis is a struct for redis user
 type UserRedis struct {
 	ID          int64  `redis:"id"`
 	Name        string `redis:"name"`

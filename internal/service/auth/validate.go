@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/valek177/auth/internal/model"
+	"github.com/valek177/auth/internal/password"
 )
 
 func validateCreateUser(user *model.NewUser) error {
@@ -16,7 +17,7 @@ func validateCreateUser(user *model.NewUser) error {
 	if user.Password == "" {
 		return errors.New("unable to create user: password is required")
 	}
-	if user.Password != user.PasswordConfirm {
+	if !password.CheckPasswordHash(user.PasswordConfirm, user.Password) {
 		return errors.New("unable to create user: the passwords do not match")
 	}
 

@@ -31,8 +31,8 @@ func (s *serv) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserI
 		if errTx != nil {
 			return errTx
 		}
-		s.redisRepository.CreateUser(ctx, user)
-		s.redisRepository.SetExpireUser(ctx, user.ID)
+		_ = s.redisRepository.CreateUser(ctx, user)
+		_ = s.redisRepository.SetExpireUser(ctx, user.ID)
 
 		_, errTx = s.logRepository.CreateRecord(ctx,
 			converter.ToRecordRepoFromService(updateUserInfo.ID, "update"))

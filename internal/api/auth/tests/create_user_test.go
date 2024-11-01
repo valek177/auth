@@ -29,11 +29,10 @@ func TestCreateUser(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id       = gofakeit.Int64()
-		name     = gofakeit.Name()
-		email    = gofakeit.Email()
-		password = gofakeit.Password(true, false, false, false, false, 7)
-
+		id         = gofakeit.Int64()
+		name       = gofakeit.Name()
+		email      = gofakeit.Email()
+		password   = gofakeit.Password(true, false, false, false, false, 7)
 		serviceErr = fmt.Errorf("service error")
 
 		req = &user_v1.CreateUserRequest{
@@ -43,15 +42,6 @@ func TestCreateUser(t *testing.T) {
 			PasswordConfirm: password,
 			Role:            user_v1.Role_USER,
 		}
-
-		newUser = &model.NewUser{
-			Name:            name,
-			Email:           email,
-			Password:        password,
-			PasswordConfirm: password,
-			Role:            user_v1.Role_USER.String(),
-		}
-
 		res = &user_v1.CreateUserResponse{
 			Id: id,
 		}
@@ -74,7 +64,10 @@ func TestCreateUser(t *testing.T) {
 			err:  nil,
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateUserMock.Expect(ctx, newUser).Return(id, nil)
+				mock.CreateUserMock.Set(func(_ context.Context, _ *model.NewUser,
+				) (i1 int64, err error) {
+					return id, nil
+				})
 				return mock
 			},
 		},
@@ -96,7 +89,9 @@ func TestCreateUser(t *testing.T) {
 			err:  serviceErr,
 			authServiceMock: func(mc *minimock.Controller) service.AuthService {
 				mock := serviceMocks.NewAuthServiceMock(mc)
-				mock.CreateUserMock.Expect(ctx, newUser).Return(0, serviceErr)
+				mock.CreateUserMock.Set(func(_ context.Context, _ *model.NewUser) (i1 int64, err error) {
+					return 0, serviceErr
+				})
 				return mock
 			},
 		},

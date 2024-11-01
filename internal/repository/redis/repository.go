@@ -7,12 +7,12 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 
-	"github.com/valek177/auth/internal/client/cache"
-	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/model"
 	"github.com/valek177/auth/internal/repository"
 	"github.com/valek177/auth/internal/repository/redis/converter"
 	modelRepo "github.com/valek177/auth/internal/repository/redis/model"
+	"github.com/valek177/platform-common/pkg/client/cache"
+	"github.com/valek177/platform-common/pkg/client/cache/config"
 )
 
 type repo struct {
@@ -20,6 +20,7 @@ type repo struct {
 	config config.RedisConfig
 }
 
+// NewUserRedisRepository returns new user redis repository
 func NewUserRedisRepository(cl cache.RedisClient, config config.RedisConfig,
 ) repository.UserRedisRepository {
 	return &repo{cl: cl, config: config}

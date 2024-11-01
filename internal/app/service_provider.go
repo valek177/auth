@@ -7,8 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/valek177/auth/internal/api/auth"
-	"github.com/valek177/auth/internal/client/cache"
-	"github.com/valek177/auth/internal/client/cache/redis"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/config/env"
 	"github.com/valek177/auth/internal/repository"
@@ -17,6 +15,9 @@ import (
 	redisRepo "github.com/valek177/auth/internal/repository/redis"
 	"github.com/valek177/auth/internal/service"
 	authService "github.com/valek177/auth/internal/service/auth"
+	cache "github.com/valek177/platform-common/pkg/client/cache"
+	redisConfig "github.com/valek177/platform-common/pkg/client/cache/config"
+	redis "github.com/valek177/platform-common/pkg/client/cache/redis"
 	"github.com/valek177/platform-common/pkg/client/db"
 	"github.com/valek177/platform-common/pkg/client/db/pg"
 	"github.com/valek177/platform-common/pkg/client/db/transaction"
@@ -26,7 +27,7 @@ import (
 type serviceProvider struct {
 	pgConfig    config.PGConfig
 	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
+	redisConfig redisConfig.RedisConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -75,7 +76,7 @@ func (s *serviceProvider) GRPCConfig() (config.GRPCConfig, error) {
 	return s.grpcConfig, nil
 }
 
-func (s *serviceProvider) RedisConfig() (config.RedisConfig, error) {
+func (s *serviceProvider) RedisConfig() (redisConfig.RedisConfig, error) {
 	if s.redisConfig == nil {
 		cfg, err := env.NewRedisConfig()
 		if err != nil {
@@ -161,7 +162,7 @@ func (s *serviceProvider) RedisClient() (cache.RedisClient, error) {
 	return s.redisClient, nil
 }
 
-func (s *serviceProvider) UserRedisRepository(ctx context.Context) (
+func (s *serviceProvider) UserRedisRepository() (
 	repository.UserRedisRepository, error,
 ) {
 	if s.redisRepository == nil {
@@ -217,7 +218,7 @@ func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService,
 		if err != nil {
 			return nil, err
 		}
-		redisRepo, err := s.UserRedisRepository(ctx)
+		redisRepo, err := s.UserRedisRepository()
 		if err != nil {
 			return nil, err
 		}

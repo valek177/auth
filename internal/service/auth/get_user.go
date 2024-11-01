@@ -12,7 +12,7 @@ import (
 func (s *serv) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	user, err := s.redisRepository.GetUser(ctx, id)
 	if err == nil {
-		s.redisRepository.SetExpireUser(ctx, id)
+		_ = s.redisRepository.SetExpireUser(ctx, id)
 		return user, nil
 	}
 
@@ -21,8 +21,8 @@ func (s *serv) GetUser(ctx context.Context, id int64) (*model.User, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	s.redisRepository.CreateUser(ctx, user)
-	s.redisRepository.SetExpireUser(ctx, id)
+	_ = s.redisRepository.CreateUser(ctx, user)
+	_ = s.redisRepository.SetExpireUser(ctx, id)
 
 	return user, nil
 }

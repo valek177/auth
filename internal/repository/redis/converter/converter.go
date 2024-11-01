@@ -8,6 +8,7 @@ import (
 	modelRepo "github.com/valek177/auth/internal/repository/redis/model"
 )
 
+// ToRedisRepoFromUser converts user from service to repo
 func ToRedisRepoFromUser(user *model.User) *modelRepo.UserRedis {
 	if user == nil {
 		return &modelRepo.UserRedis{}
@@ -23,6 +24,7 @@ func ToRedisRepoFromUser(user *model.User) *modelRepo.UserRedis {
 	}
 }
 
+// ToUserFromRedisRepo converts user from redis repo to service user
 func ToUserFromRedisRepo(userRedis *modelRepo.UserRedis) *model.User {
 	if userRedis == nil {
 		return &model.User{}

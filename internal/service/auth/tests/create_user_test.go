@@ -11,6 +11,7 @@ import (
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/model"
+	passLib "github.com/valek177/auth/internal/password"
 	"github.com/valek177/auth/internal/repository"
 	repoMocks "github.com/valek177/auth/internal/repository/mocks"
 	"github.com/valek177/auth/internal/service/auth"
@@ -41,10 +42,11 @@ func TestCreateUser(t *testing.T) {
 
 		repoErr = fmt.Errorf("repo error")
 
+		hash, _ = passLib.HashPassword(password)
 		newUser = &model.NewUser{
 			Name:            name,
 			Email:           email,
-			Password:        password,
+			Password:        hash,
 			PasswordConfirm: password,
 			Role:            user_v1.Role_USER.String(),
 		}
@@ -83,7 +85,7 @@ func TestCreateUser(t *testing.T) {
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
 				mock := repoMocks.NewLogRepositoryMock(mc)
-				mock.CreateRecordMock.Set(func(ctx context.Context, record *model.Record,
+				mock.CreateRecordMock.Set(func(_ context.Context, _ *model.Record,
 				) (int64, error) {
 					return 0, nil
 				})
@@ -91,13 +93,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
-				) (err error) {
-					return nil
-				})
-				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (err error) {
-					return nil
-				})
+				mock.CreateUserMock.Expect(ctx, &model.User{ID: id, Name: ""}).Return(nil)
+				mock.SetExpireUserMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -282,8 +279,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
 				mock := repoMocks.NewLogRepositoryMock(mc)
-				mock.CreateRecordMock.Set(func(ctx context.Context,
-					record *model.Record,
+				mock.CreateRecordMock.Set(func(_ context.Context,
+					_ *model.Record,
 				) (i1 int64, err error) {
 					return 0, fmt.Errorf("create record on create error")
 				})
@@ -291,13 +288,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
-				) (err error) {
-					return nil
-				})
-				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (err error) {
-					return nil
-				})
+				mock.CreateUserMock.Expect(ctx, &model.User{}).Return(nil)
+				mock.SetExpireUserMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
 			txManagerMock: txManagerFunc,

@@ -83,20 +83,10 @@ func TestGetUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
-					up1 *model.User, err error,
-				) {
-					return nil, errors.New("no user in redis")
-				})
-				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (
-					err error,
-				) {
-					return nil
-				})
-				mock.CreateUserMock.Set(func(ctx context.Context, user *model.User,
-				) (err error) {
-					return nil
-				})
+				mock.GetUserMock.Expect(ctx, id).Return(nil,
+					errors.New("no user in redis"))
+				mock.SetExpireUserMock.Expect(ctx, id).Return(nil)
+				mock.CreateUserMock.Expect(ctx, user).Return(nil)
 				return mock
 			},
 		},
@@ -122,16 +112,8 @@ func TestGetUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
-					up1 *model.User, err error,
-				) {
-					return user, nil
-				})
-				mock.SetExpireUserMock.Set(func(ctx context.Context, id int64) (
-					err error,
-				) {
-					return nil
-				})
+				mock.GetUserMock.Expect(ctx, id).Return(user, nil)
+				mock.SetExpireUserMock.Expect(ctx, id).Return(nil)
 				return mock
 			},
 		},
@@ -169,11 +151,9 @@ func TestGetUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.GetUserMock.Set(func(ctx context.Context, id int64) (
-					up1 *model.User, err error,
-				) {
-					return nil, errors.New("no user in redis")
-				})
+				mock.GetUserMock.Expect(ctx, id).Return(nil,
+					errors.New("no user in redis"),
+				)
 				return mock
 			},
 		},

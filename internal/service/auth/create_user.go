@@ -27,8 +27,8 @@ func (s *serv) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, e
 			return errTx
 		}
 
-		s.redisRepository.CreateUser(ctx, user)
-		s.redisRepository.SetExpireUser(ctx, id)
+		_ = s.redisRepository.CreateUser(ctx, user)
+		_ = s.redisRepository.SetExpireUser(ctx, id)
 
 		_, errTx = s.logRepository.CreateRecord(ctx,
 			converter.ToRecordRepoFromService(id, "create"))

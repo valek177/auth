@@ -30,6 +30,7 @@ type redisConfig struct {
 	elementTTL time.Duration
 }
 
+// NewRedisConfig returns new redis config
 func NewRedisConfig() (*redisConfig, error) {
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {

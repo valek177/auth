@@ -150,6 +150,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/valek177/platform-common v0.0.0-20241030083325-890fdf85f568 h1:DOwqQ4DGbDcUGEfJFGdCTiVo19AClnMo7LpR71hT5uQ=
 github.com/valek177/platform-common v0.0.0-20241030083325-890fdf85f568/go.mod h1:Qdq/fidvV3SPP7UhOXVl4A9HT5eIr2pAwW120zMkjpg=
+github.com/valek177/platform-common v0.0.0-20241101144611-dca666124e80 h1:bzAfu+67CbULRVv8K5EAWk7ms0K2SECkze4qYjduMHI=
+github.com/valek177/platform-common v0.0.0-20241101144611-dca666124e80/go.mod h1:Wdeb4Po5PXA9Dd4jgpbKJh9oSrN807oMfBPDg6N6xqQ=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
 go.uber.org/atomic v1.3.2/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
