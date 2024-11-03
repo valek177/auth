@@ -6,6 +6,7 @@ import (
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/model"
+	"github.com/valek177/auth/internal/password"
 )
 
 // ToUserV1FromService converts user model to protobuf object
@@ -46,10 +47,12 @@ func ToNewUserFromNewUserV1(req *user_v1.CreateUserRequest) *model.NewUser {
 		return &model.NewUser{}
 	}
 
+	passHash, _ := password.HashPassword(req.Password)
+
 	return &model.NewUser{
 		Name:            req.Name,
 		Email:           req.Email,
-		Password:        req.Password,
+		Password:        passHash,
 		PasswordConfirm: req.PasswordConfirm,
 		Role:            req.Role.String(),
 	}

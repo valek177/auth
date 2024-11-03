@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/valek177/auth/grpc/pkg/user_v1"
-	"github.com/valek177/auth/internal/closer"
 	"github.com/valek177/auth/internal/config"
+	"github.com/valek177/platform-common/pkg/closer"
 )
 
 var configPath string

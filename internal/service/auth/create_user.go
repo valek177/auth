@@ -12,15 +12,23 @@ func (s *serv) CreateUser(ctx context.Context, newUser *model.NewUser) (int64, e
 	var id int64
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
+		errTx = validateCreateUser(newUser)
+		if errTx != nil {
+			return errTx
+		}
+
 		id, errTx = s.authRepository.CreateUser(ctx, newUser)
 		if errTx != nil {
 			return errTx
 		}
 
-		_, errTx = s.authRepository.GetUser(ctx, id)
+		user, errTx := s.authRepository.GetUser(ctx, id)
 		if errTx != nil {
 			return errTx
 		}
+
+		_ = s.redisRepository.CreateUser(ctx, user)
+		_ = s.redisRepository.SetExpireUser(ctx, id)
 
 		_, errTx = s.logRepository.CreateRecord(ctx,
 			converter.ToRecordRepoFromService(id, "create"))

@@ -6,9 +6,9 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/valek177/auth/internal/client/db"
 	"github.com/valek177/auth/internal/model"
 	"github.com/valek177/auth/internal/repository"
+	"github.com/valek177/platform-common/pkg/client/db"
 )
 
 const (
