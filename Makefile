@@ -21,7 +21,9 @@ get-deps:
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 generate:
+	mkdir -p grpc/pkg/swagger
 	make generate-user-api
+	$(LOCAL_BIN)/statik -src=grpc/pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'
 
 generate-user-api:
 	mkdir -p grpc/pkg/user_v1
@@ -34,6 +36,8 @@ generate-user-api:
 	--plugin=protoc-gen-validate=bin/protoc-gen-validate \
 	--grpc-gateway_out=grpc/pkg/user_v1 --grpc-gateway_opt=paths=source_relative \
 	--plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
+	--openapiv2_out=allow_merge=true,merge_file_name=api:grpc/pkg/swagger \
+	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	grpc/api/user_v1/user.proto
 
 local-migration-status:

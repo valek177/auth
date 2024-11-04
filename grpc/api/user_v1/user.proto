@@ -6,12 +6,31 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-//import "protoc-gen-openapiv2/options/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 import "validate/validate.proto";
 
 option go_package = "github.com/valek177/auth/grpc/pkg/user_v1;user_v1";
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "User API"
+    version: "1.0.0"
+    contact: {
+      name: "Valentina Bogdanova"
+      email: "valek177@gmail.com"
+    };
+  };
+
+  host: "localhost:8081",
+  schemes: HTTP,
+  schemes: HTTPS,
+  consumes: "application/json",
+  produces: "application/json",
+};
+
+// UserV1 is service for user control
 service UserV1 {
+  // CreateUser creates new user
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
     option (google.api.http) = {
       post: "/user/v1/create_user"
@@ -19,12 +38,14 @@ service UserV1 {
     };
   }
 
+  // GetUser returns user
   rpc GetUser(GetUserRequest) returns (GetUserResponse){
     option (google.api.http) = {
       get: "/user/v1"
     };
   }
 
+  // UpdateUser updates user
   rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty){
     option (google.api.http) = {
       patch: "/user/v1"
@@ -32,6 +53,7 @@ service UserV1 {
     };
   }
 
+  // DeleteUser deletes existing user
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty){
     option (google.api.http) = {
       delete: "/user/v1"
@@ -39,51 +61,91 @@ service UserV1 {
   }
 }
 
+// UserInfo message describes user info
 message UserInfo {
+  // User name
   google.protobuf.StringValue name = 1;
+  // User e-mail address
   google.protobuf.StringValue email = 2;
+  // User role
   Role role = 3;
 }
 
+// User message describes all user info
 message User {
+  // User ID
   int64 id = 1;
+  // UserInfo message
   UserInfo user_info = 2;
+  // Time when user was created
   google.protobuf.Timestamp created_at = 5;
+  // Time when user was updated
   google.protobuf.Timestamp updated_at = 6;
 }
 
+// Role enum describes user roles
 enum Role {
   UNKNOWN = 0;
   ADMIN = 1;
   USER = 2;
 }
 
+// CreateUserRequest is a request message for create user
 message CreateUserRequest {
-  string name = 1;
-  string email = 2;
+  // User name
+  string name = 1 [
+    (validate.rules).string = {
+      max_len: 100
+      min_len: 3
+      pattern: "^[0-9a-z:.-]+$"
+    }
+  ];
+  // User e-mail
+  string email = 2 [(validate.rules).string.email = true];
+  // User password
   string password = 3;
+  // User password confirmation
   string password_confirm = 4;
+  // User role
   Role role = 5;
 }
 
+// CreateUserResponse is a response message for create user
 message CreateUserResponse {
+  // User ID
   int64 id = 1;
 }
 
+// GetUserRequest is a request message for user info
 message GetUserRequest {
+  // User ID
   int64 id = 1;
 }
 
+// GetUserResponse is a response message for user info
 message GetUserResponse {
+  // User contains user fields
   User user = 1;
 }
 
+// UpdateUserRequest is a request message for updating user
 message UpdateUserRequest {
+  // User id
   int64 id = 1;
-  google.protobuf.StringValue name = 2;
+  // User name
+  google.protobuf.StringValue name = 2 [
+    (validate.rules).string = {
+      max_len: 100
+      min_len: 3
+      pattern: "^[0-9a-z:.-]+$"
+    }
+  ];
+  // User role
   Role role = 3;
 }
 
+// DeleteUserRequest is a request message for deleting user
 message DeleteUserRequest {
+  // User id
   int64 id = 1;
 }

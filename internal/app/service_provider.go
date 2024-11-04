@@ -25,10 +25,11 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	httpConfig  config.HTTPConfig
-	redisConfig redisConfig.RedisConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	httpConfig    config.HTTPConfig
+	redisConfig   redisConfig.RedisConfig
+	swaggerConfig config.SwaggerConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -89,6 +90,20 @@ func (s *serviceProvider) HTTPConfig() (config.HTTPConfig, error) {
 	}
 
 	return s.httpConfig, nil
+}
+
+// SwaggerConfig return swagger config
+func (s *serviceProvider) SwaggerConfig() (config.SwaggerConfig, error) {
+	if s.swaggerConfig == nil {
+		cfg, err := env.NewSwaggerConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.swaggerConfig = cfg
+	}
+
+	return s.swaggerConfig, nil
 }
 
 // RedisConfig returns redis config
