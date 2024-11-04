@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/valek177/auth/internal/app"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	a, err := app.NewApp(ctx)
 	if err != nil {

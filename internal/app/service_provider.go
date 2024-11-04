@@ -27,6 +27,7 @@ import (
 type serviceProvider struct {
 	pgConfig    config.PGConfig
 	grpcConfig  config.GRPCConfig
+	httpConfig  config.HTTPConfig
 	redisConfig redisConfig.RedisConfig
 
 	dbClient  db.Client
@@ -76,6 +77,21 @@ func (s *serviceProvider) GRPCConfig() (config.GRPCConfig, error) {
 	return s.grpcConfig, nil
 }
 
+// HTTPConfig returns HTTP config
+func (s *serviceProvider) HTTPConfig() (config.HTTPConfig, error) {
+	if s.httpConfig == nil {
+		cfg, err := env.NewHTTPConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.httpConfig = cfg
+	}
+
+	return s.httpConfig, nil
+}
+
+// RedisConfig returns redis config
 func (s *serviceProvider) RedisConfig() (redisConfig.RedisConfig, error) {
 	if s.redisConfig == nil {
 		cfg, err := env.NewRedisConfig()
