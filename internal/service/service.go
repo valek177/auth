@@ -13,3 +13,7 @@ type AuthService interface {
 	UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error
 	DeleteUser(ctx context.Context, id int64) error
 }
+
+type ConsumerService interface {
+	RunConsumer(ctx context.Context) error
+}

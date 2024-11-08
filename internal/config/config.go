@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
 
@@ -31,4 +32,10 @@ type HTTPConfig interface {
 
 type SwaggerConfig interface {
 	Address() string
+}
+
+type KafkaConsumerConfig interface {
+	Brokers() []string
+	GroupID() string
+	Config() *sarama.Config
 }
