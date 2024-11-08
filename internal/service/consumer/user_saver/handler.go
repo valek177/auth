@@ -10,6 +10,7 @@ import (
 	"github.com/valek177/auth/internal/model"
 )
 
+// UserSaveHandler executes kafka creation user logic
 func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
 	user := &model.NewUser{}
 	err := json.Unmarshal(msg.Value, user)
