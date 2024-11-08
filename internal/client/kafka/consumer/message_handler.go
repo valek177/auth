@@ -7,12 +7,15 @@ import (
 	"github.com/IBM/sarama"
 )
 
+// Handler is a func for Handler
 type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
 
+// GroupHandler is a struct for group handler
 type GroupHandler struct {
 	msgHandler Handler
 }
 
+// NewGroupHandler returns new group handler
 func NewGroupHandler() *GroupHandler {
 	return &GroupHandler{}
 }

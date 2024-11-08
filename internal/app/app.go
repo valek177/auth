@@ -19,7 +19,7 @@ import (
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
-	_ "github.com/valek177/auth/statik"
+	_ "github.com/valek177/auth/statik" //nolint:revive
 	"github.com/valek177/platform-common/pkg/closer"
 )
 
@@ -188,7 +188,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		return err
 	}
 
-	a.httpServer = &http.Server{
+	a.httpServer = &http.Server{ //nolint:gosec
 		Addr:    httpCfg.Address(),
 		Handler: corsMiddleware.Handler(mux),
 	}
@@ -211,7 +211,7 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 		return err
 	}
 
-	a.swaggerServer = &http.Server{
+	a.swaggerServer = &http.Server{ //nolint:gosec
 		Addr:    cfg.Address(),
 		Handler: mux,
 	}
@@ -271,7 +271,7 @@ func (a *App) runSwaggerServer() error {
 }
 
 func serveSwaggerFile(path string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		log.Printf("Serving swagger file: %s", path)
 
 		statikFs, err := fs.New()
@@ -287,7 +287,9 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			_ = file.Close()
+		}()
 
 		log.Printf("Read swagger file: %s", path)
 

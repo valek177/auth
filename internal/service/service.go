@@ -14,6 +14,7 @@ type AuthService interface {
 	DeleteUser(ctx context.Context, id int64) error
 }
 
+// ConsumerService is interface for consumer logic
 type ConsumerService interface {
 	RunConsumer(ctx context.Context) error
 }

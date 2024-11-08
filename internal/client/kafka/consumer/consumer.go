@@ -14,6 +14,7 @@ type consumer struct {
 	consumerGroupHandler *GroupHandler
 }
 
+// NewConsumer returns new kafka consumer
 func NewConsumer(
 	consumerGroup sarama.ConsumerGroup,
 	consumerGroupHandler *GroupHandler,
@@ -24,12 +25,14 @@ func NewConsumer(
 	}
 }
 
+// Consume executes consume logic
 func (c *consumer) Consume(ctx context.Context, topicName string, handler Handler) error {
 	c.consumerGroupHandler.msgHandler = handler
 
 	return c.consume(ctx, topicName)
 }
 
+// Close closes consumer group
 func (c *consumer) Close() error {
 	return c.consumerGroup.Close()
 }

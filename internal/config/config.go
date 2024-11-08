@@ -30,10 +30,12 @@ type HTTPConfig interface {
 	Address() string
 }
 
+// SwaggerConfig interface for SwaggerConfig
 type SwaggerConfig interface {
 	Address() string
 }
 
+// KafkaConsumerConfig interface for KafkaConsumerConfig
 type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string

@@ -15,6 +15,7 @@ type service struct {
 	consumer       kafka.Consumer
 }
 
+// NewService returns new consumer service
 func NewService(
 	authRepository repository.AuthRepository,
 	consumer kafka.Consumer,
@@ -25,6 +26,7 @@ func NewService(
 	}
 }
 
+// RunConsumer runs consumer logic
 func (s *service) RunConsumer(ctx context.Context) error {
 	for {
 		select {
