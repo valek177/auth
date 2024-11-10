@@ -14,6 +14,10 @@ import (
 const (
 	brokerAddress = "localhost:9092, localhost:9093, localhost:9094"
 	topicName     = "test-topic"
+
+	producerRequiredAcksDefault    = sarama.WaitForAll
+	producerRetryMaxDefault        = 5
+	producerReturnSuccessesDefault = true
 )
 
 func main() {
@@ -57,9 +61,9 @@ func main() {
 
 func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 5
-	config.Producer.Return.Successes = true
+	config.Producer.RequiredAcks = producerRequiredAcksDefault
+	config.Producer.Retry.Max = producerRetryMaxDefault
+	config.Producer.Return.Successes = producerReturnSuccessesDefault
 
 	producer, err := sarama.NewSyncProducer(brokerList, config)
 	if err != nil {

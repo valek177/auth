@@ -23,7 +23,14 @@ import (
 	"github.com/valek177/platform-common/pkg/closer"
 )
 
-var configPath string
+var (
+	configPath                string
+	corsAllowedOriginsDefault = []string{"*"}
+	corsAllowedMethodsDefault = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	corsAllowedHeadersDefault = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
+)
+
+const corsAllowCredentialsDefault = true
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
@@ -177,10 +184,10 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	}
 
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Authorization"},
-		AllowCredentials: true,
+		AllowedOrigins:   corsAllowedOriginsDefault,
+		AllowedMethods:   corsAllowedMethodsDefault,
+		AllowedHeaders:   corsAllowedHeadersDefault,
+		AllowCredentials: corsAllowCredentialsDefault,
 	})
 
 	httpCfg, err := a.serviceProvider.HTTPConfig()

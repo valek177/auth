@@ -8,6 +8,10 @@ import (
 	def "github.com/valek177/auth/internal/service"
 )
 
+const (
+	topicName = "test-topic"
+)
+
 var _ def.ConsumerService = (*service)(nil)
 
 type service struct {
@@ -46,7 +50,7 @@ func (s *service) run(ctx context.Context) <-chan error {
 	go func() {
 		defer close(errChan)
 
-		errChan <- s.consumer.Consume(ctx, "test-topic", s.UserSaveHandler)
+		errChan <- s.consumer.Consume(ctx, topicName, s.UserSaveHandler)
 	}()
 
 	return errChan
