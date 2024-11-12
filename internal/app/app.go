@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/valek177/auth/grpc/pkg/access_v1"
+	"github.com/valek177/auth/grpc/pkg/auth_v1"
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
@@ -167,12 +169,24 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
+	userImpl, err := a.serviceProvider.UserImpl(ctx)
+	if err != nil {
+		return err
+	}
+
 	authImpl, err := a.serviceProvider.AuthImpl(ctx)
 	if err != nil {
 		return err
 	}
 
-	user_v1.RegisterUserV1Server(a.grpcServer, authImpl)
+	accessImpl, err := a.serviceProvider.AccessImpl(ctx)
+	if err != nil {
+		return err
+	}
+
+	user_v1.RegisterUserV1Server(a.grpcServer, userImpl)
+	auth_v1.RegisterAuthV1Server(a.grpcServer, authImpl)
+	access_v1.RegisterAccessV1Server(a.grpcServer, accessImpl)
 
 	return nil
 }

@@ -18,7 +18,7 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 		return err
 	}
 
-	id, err := s.authRepository.CreateUser(ctx, user)
+	id, err := s.userRepository.CreateUser(ctx, user)
 	if err != nil {
 		return err
 	}

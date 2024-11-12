@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"github.com/valek177/auth/grpc/pkg/user_v1"
+	"github.com/valek177/auth/grpc/pkg/auth_v1"
 	"github.com/valek177/auth/internal/service"
 )
 
 // Implementation struct contains server
 type Implementation struct {
-	user_v1.UnimplementedUserV1Server
+	auth_v1.UnimplementedAuthV1Server
 	authService service.AuthService
 }
 
