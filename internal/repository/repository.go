@@ -14,7 +14,11 @@ type UserRepository interface {
 	DeleteUser(ctx context.Context, id int64) error
 }
 
-type AccessRepository interface{}
+type AccessRepository interface {
+	GetAccessRuleByEndpoint(ctx context.Context, endpoint string) (
+		*model.EndpointAccessRule, error,
+	)
+}
 
 // LogRepository is interface for logging user actions
 type LogRepository interface {

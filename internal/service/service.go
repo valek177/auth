@@ -14,9 +14,17 @@ type UserService interface {
 	DeleteUser(ctx context.Context, id int64) error
 }
 
-type AuthService interface{}
+// AuthService is interface for auth logic on service
+type AuthService interface {
+	Login(ctx context.Context, username, password string) (string, error)
+	GetRefreshToken(ctx context.Context, oldRefreshToken string) (string, error)
+	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
+}
 
-type AccessService interface{}
+// AccessService is interface for access logic on service
+type AccessService interface {
+	Check(ctx context.Context, accessToken string, endpoint string) (bool, error)
+}
 
 // ConsumerService is interface for consumer logic
 type ConsumerService interface {

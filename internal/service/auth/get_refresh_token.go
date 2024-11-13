@@ -2,10 +2,11 @@ package auth
 
 import "context"
 
-func (s *serv) GetRefreshToken(ctx context.Context) error { // req *descAuth.GetRefreshTokenRequest) (*descAuth.GetRefreshTokenResponse, error) {
-	return nil
+// GetRefreshToken returns new refresh token by old refresh token
+func (s *serv) GetRefreshToken(ctx context.Context, oldRefreshToken string) (string, error) {
+	return "", nil
 
-	// claims, err := utils.VerifyToken(req.GetRefreshToken(), []byte(refreshTokenSecretKey))
+	// claims, err := utils.VerifyToken(oldRefreshToken, []byte(refreshTokenSecretKey))
 	// if err != nil {
 	// 	return nil, status.Errorf(codes.Aborted, "invalid refresh token")
 	// }

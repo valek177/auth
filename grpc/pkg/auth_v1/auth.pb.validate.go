@@ -262,7 +262,7 @@ func (m *GetRefreshTokenRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for RefreshToken
+	// no validation rules for OldRefreshToken
 
 	if len(errors) > 0 {
 		return GetRefreshTokenRequestMultiError(errors)

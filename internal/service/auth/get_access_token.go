@@ -2,8 +2,9 @@ package auth
 
 import "context"
 
-func (s *serv) GetAccessToken(ctx context.Context) error { // req *descAuth.GetAccessTokenRequest) (*descAuth.GetAccessTokenResponse, error) {
-	return nil
+// GetAccessToken returns access token by refresh token
+func (s *serv) GetAccessToken(ctx context.Context, refreshToken string) (string, error) {
+	return "", nil
 
 	// claims, err := utils.VerifyToken(req.GetRefreshToken(), []byte(refreshTokenSecretKey))
 	// if err != nil {

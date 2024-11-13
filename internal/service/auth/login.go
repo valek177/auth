@@ -1,10 +1,19 @@
 package auth
 
-import "context"
+import (
+	"context"
+)
 
-func (s *serv) Login(ctx context.Context) error {
+func (s *serv) Login(ctx context.Context, username, password string) (string, error) {
 	// Go to database through repo layer (GetUser)
-	return nil
+
+	// id := int64(52) // get by name?
+	// user, err := s.userRepository.GetUser(ctx, id)
+	// if err != nil {
+	// 	return "", errors.New("unable to get user")
+	// }
+
+	// isPasswordsEqual := passwordLib.CheckPasswordHash(password, user.Password)
 
 	// Лезем в базу или кэш за данными пользователя
 	// Сверяем хэши пароля
@@ -21,5 +30,5 @@ func (s *serv) Login(ctx context.Context) error {
 	// 	return nil, errors.New("failed to generate token")
 	// }
 
-	// return &descAuth.LoginResponse{RefreshToken: refreshToken}, nil
+	return "", nil // refreshToken, nil
 }
