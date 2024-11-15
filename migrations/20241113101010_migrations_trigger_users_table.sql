@@ -1,14 +1,14 @@
 -- +goose Up
 -- +goose StatementBegin
-create table roles_users_access
+create table access_list
 (
-    id           serial primary key,
-    role         int not null,
-    endpoint     varchar   not null,
+    role         varchar not null,
+    endpoint     varchar not null,
+    unique(role, endpoint)
 );
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-drop table roles_users_access;
+drop table access_list;
 -- +goose StatementEnd

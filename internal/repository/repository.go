@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, newUser *model.NewUser) (int64, error)
 	GetUser(ctx context.Context, id int64) (*model.User, error)
+	GetUserByName(ctx context.Context, username string) (*model.User, error)
 	UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error
 	DeleteUser(ctx context.Context, id int64) error
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/config/env"
 	"github.com/valek177/auth/internal/repository"
+	accessRepository "github.com/valek177/auth/internal/repository/access"
 	logRepo "github.com/valek177/auth/internal/repository/log"
 	redisRepo "github.com/valek177/auth/internal/repository/redis"
 	userRepository "github.com/valek177/auth/internal/repository/user"
@@ -23,6 +24,7 @@ import (
 	authService "github.com/valek177/auth/internal/service/auth"
 	userSaverConsumer "github.com/valek177/auth/internal/service/consumer/user_saver"
 	userService "github.com/valek177/auth/internal/service/user"
+	"github.com/valek177/auth/internal/utils"
 	cache "github.com/valek177/platform-common/pkg/client/cache"
 	redisConfig "github.com/valek177/platform-common/pkg/client/cache/config"
 	redis "github.com/valek177/platform-common/pkg/client/cache/redis"
@@ -33,11 +35,13 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	httpConfig    config.HTTPConfig
-	redisConfig   redisConfig.RedisConfig
-	swaggerConfig config.SwaggerConfig
+	pgConfig           config.PGConfig
+	grpcConfig         config.GRPCConfig
+	httpConfig         config.HTTPConfig
+	redisConfig        redisConfig.RedisConfig
+	swaggerConfig      config.SwaggerConfig
+	tokenRefreshConfig config.TokenConfig
+	tokenAccessConfig  config.TokenConfig
 
 	kafkaConsumerConfig  config.KafkaConsumerConfig
 	consumer             kafka.Consumer
@@ -51,6 +55,9 @@ type serviceProvider struct {
 
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
+
+	tokenAccess  utils.Token
+	tokenRefresh utils.Token
 
 	userRepository   repository.UserRepository
 	accessRepository repository.AccessRepository
@@ -124,6 +131,32 @@ func (s *serviceProvider) SwaggerConfig() (config.SwaggerConfig, error) {
 	}
 
 	return s.swaggerConfig, nil
+}
+
+func (s *serviceProvider) TokenAccessConfig() (config.TokenConfig, error) {
+	if s.tokenAccessConfig == nil {
+		cfg, err := env.NewAccessTokenConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.tokenAccessConfig = cfg
+	}
+
+	return s.tokenAccessConfig, nil
+}
+
+func (s *serviceProvider) TokenRefreshConfig() (config.TokenConfig, error) {
+	if s.tokenRefreshConfig == nil {
+		cfg, err := env.NewRefreshTokenConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.tokenRefreshConfig = cfg
+	}
+
+	return s.tokenRefreshConfig, nil
 }
 
 // RedisConfig returns redis config
@@ -227,6 +260,30 @@ func (s *serviceProvider) RedisClient() (cache.RedisClient, error) {
 	return s.redisClient, nil
 }
 
+func (s *serviceProvider) TokenRefresh() (utils.Token, error) {
+	if s.tokenRefresh == nil {
+		cfg, err := s.TokenAccessConfig()
+		if err != nil {
+			return nil, err
+		}
+		s.tokenRefresh = utils.NewToken(cfg)
+	}
+
+	return s.tokenRefresh, nil
+}
+
+func (s *serviceProvider) TokenAccess() (utils.Token, error) {
+	if s.tokenRefresh == nil {
+		cfg, err := s.TokenAccessConfig()
+		if err != nil {
+			return nil, err
+		}
+		s.tokenRefresh = utils.NewToken(cfg)
+	}
+
+	return s.tokenRefresh, nil
+}
+
 // UserRedisRepository returns redis repository
 func (s *serviceProvider) UserRedisRepository() (
 	repository.UserRedisRepository, error,
@@ -273,6 +330,20 @@ func (s *serviceProvider) LogRepository(ctx context.Context) (repository.LogRepo
 	return s.logRepository, nil
 }
 
+func (s *serviceProvider) AccessRepository(ctx context.Context) (
+	repository.AccessRepository, error,
+) {
+	if s.accessRepository == nil {
+		dbClient, err := s.DBClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.accessRepository = accessRepository.NewRepository(dbClient)
+	}
+
+	return s.accessRepository, nil
+}
+
 // UserService returns new UserService
 func (s *serviceProvider) UserService(ctx context.Context) (service.UserService, error) {
 	if s.userService == nil {
@@ -307,8 +378,18 @@ func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService,
 		if err != nil {
 			return nil, err
 		}
+		tokenAccess, err := s.TokenAccess()
+		if err != nil {
+			return nil, err
+		}
+		tokenRefresh, err := s.TokenRefresh()
+		if err != nil {
+			return nil, err
+		}
 		s.authService = authService.NewService(
 			userRepo,
+			tokenRefresh,
+			tokenAccess,
 		)
 	}
 
@@ -318,7 +399,15 @@ func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService,
 // AccessService returns new AccessService
 func (s *serviceProvider) AccessService(ctx context.Context) (service.AccessService, error) {
 	if s.accessService == nil {
-		s.accessService = accessService.NewService()
+		accessRepo, err := s.AccessRepository(ctx)
+		if err != nil {
+			return nil, err
+		}
+		tokenAccess, err := s.TokenAccess()
+		if err != nil {
+			return nil, err
+		}
+		s.accessService = accessService.NewService(accessRepo, tokenAccess)
 	}
 
 	return s.accessService, nil

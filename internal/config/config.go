@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
@@ -42,4 +44,9 @@ type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string
 	Config() *sarama.Config
+}
+
+type TokenConfig interface {
+	ExpTime() time.Duration
+	Secret() []byte
 }

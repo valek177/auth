@@ -15,10 +15,10 @@ func ToEndpointAccessRuleFromRepo(endpoint string, rules []*repoModel.AccessRule
 		return nil
 	}
 
-	endpointRoles := make([]int, len(rules))
+	endpointRoles := make([]string, len(rules))
 
 	for i, rule := range rules {
-		endpointRoles[i] = int(rule.Role)
+		endpointRoles[i] = rule.Role
 	}
 
 	resRule := &model.EndpointAccessRule{

@@ -1,29 +1,27 @@
 package auth
 
-import "context"
+import (
+	"context"
+
+	"github.com/pkg/errors"
+
+	"github.com/valek177/auth/internal/model"
+)
 
 // GetRefreshToken returns new refresh token by old refresh token
 func (s *serv) GetRefreshToken(ctx context.Context, oldRefreshToken string) (string, error) {
-	return "", nil
+	claims, err := s.tokenRefresh.VerifyToken(ctx, oldRefreshToken)
+	if err != nil {
+		return "", errors.New("invalid refresh token")
+	}
 
-	// claims, err := utils.VerifyToken(oldRefreshToken, []byte(refreshTokenSecretKey))
-	// if err != nil {
-	// 	return nil, status.Errorf(codes.Aborted, "invalid refresh token")
-	// }
+	refreshToken, err := s.tokenRefresh.GenerateToken(ctx, &model.User{
+		Name: claims.Username,
+		Role: claims.Role,
+	})
+	if err != nil {
+		return "", err
+	}
 
-	// // Можем слазать в базу или в кэш за доп данными пользователя
-
-	// refreshToken, err := utils.GenerateToken(model.UserInfo{
-	// 	Username: claims.Username,
-	// 	// Это пример, в реальности роль должна браться из базы или кэша
-	// 	Role: "admin",
-	// },
-	// 	[]byte(refreshTokenSecretKey),
-	// 	refreshTokenExpiration,
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return &descAuth.GetRefreshTokenResponse{RefreshToken: refreshToken}, nil
+	return refreshToken, nil
 }

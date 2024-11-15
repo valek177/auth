@@ -88,6 +88,34 @@ func (r *repo) GetUser(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
+// GetUserByName returns info about user by name
+func (r *repo) GetUserByName(ctx context.Context, username string) (*model.User, error) {
+	builderSelectOne := sq.Select(idColumn, nameColumn, emailColumn, roleColumn,
+		passwordColumn, createdAtColumn, updatedAtColumn).
+		From(tableName).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{nameColumn: username}).
+		Limit(1)
+
+	query, args, err := builderSelectOne.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	q := db.Query{
+		Name:     "user_repository.GetUserByName",
+		QueryRaw: query,
+	}
+
+	var user modelRepo.User
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.ToUserFromRepo(&user), nil
+}
+
 // UpdateUser updates user info by id
 func (r *repo) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error {
 	builderUpdate := sq.Update(tableName).

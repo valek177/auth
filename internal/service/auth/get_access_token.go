@@ -1,29 +1,26 @@
 package auth
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/valek177/auth/internal/model"
+)
 
 // GetAccessToken returns access token by refresh token
 func (s *serv) GetAccessToken(ctx context.Context, refreshToken string) (string, error) {
-	return "", nil
+	claims, err := s.tokenRefresh.VerifyToken(ctx, refreshToken)
+	if err != nil {
+		return "", fmt.Errorf("invalid refresh token: %v", err)
+	}
 
-	// claims, err := utils.VerifyToken(req.GetRefreshToken(), []byte(refreshTokenSecretKey))
-	// if err != nil {
-	// 	return nil, status.Errorf(codes.Aborted, "invalid refresh token")
-	// }
+	accessToken, err := s.tokenAccess.GenerateToken(ctx, &model.User{
+		Name: claims.Username,
+		Role: claims.Role,
+	})
+	if err != nil {
+		return "", fmt.Errorf("unable to generate access token: %v", err)
+	}
 
-	// // Можем слазать в базу или в кэш за доп данными пользователя
-
-	// accessToken, err := utils.GenerateToken(model.UserInfo{
-	// 	Username: claims.Username,
-	// 	// Это пример, в реальности роль должна браться из базы или кэша
-	// 	Role: "admin",
-	// },
-	// 	[]byte(accessTokenSecretKey),
-	// 	accessTokenExpiration,
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return &descAuth.GetAccessTokenResponse{AccessToken: accessToken}, nil
+	return accessToken, nil
 }

@@ -2,33 +2,26 @@ package auth
 
 import (
 	"context"
+	"fmt"
+
+	passwordLib "github.com/valek177/auth/internal/password"
 )
 
 func (s *serv) Login(ctx context.Context, username, password string) (string, error) {
-	// Go to database through repo layer (GetUser)
+	user, err := s.userRepository.GetUserByName(ctx, username)
+	if err != nil {
+		return "", fmt.Errorf("unable to get user %s", username)
+	}
 
-	// id := int64(52) // get by name?
-	// user, err := s.userRepository.GetUser(ctx, id)
-	// if err != nil {
-	// 	return "", errors.New("unable to get user")
-	// }
+	isPasswordsEqual := passwordLib.CheckPasswordHash(password, user.Password)
+	if !isPasswordsEqual {
+		return "", fmt.Errorf("unable to login: incorrect password")
+	}
 
-	// isPasswordsEqual := passwordLib.CheckPasswordHash(password, user.Password)
+	refreshToken, err := s.tokenRefresh.GenerateToken(ctx, user)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate token")
+	}
 
-	// Лезем в базу или кэш за данными пользователя
-	// Сверяем хэши пароля
-
-	// refreshToken, err := utils.GenerateToken(model.UserInfo{
-	// 	Username: req.GetUsername(),
-	// 	// Это пример, в реальности роль должна браться из базы или кэша
-	// 	Role: "admin",
-	// },
-	// 	[]byte(refreshTokenSecretKey),
-	// 	refreshTokenExpiration,
-	// )
-	// if err != nil {
-	// 	return nil, errors.New("failed to generate token")
-	// }
-
-	return "", nil // refreshToken, nil
+	return refreshToken, nil
 }

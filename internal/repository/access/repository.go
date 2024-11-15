@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	tableName = "roles_users_access"
+	tableName = "access_list"
 
 	idColumn       = "id"
 	roleColumn     = "role"
