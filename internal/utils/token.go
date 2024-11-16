@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -43,6 +44,7 @@ func (t *token) GenerateToken(_ context.Context, user *model.User) (string, erro
 }
 
 func (t *token) VerifyToken(_ context.Context, token string) (*model.UserClaims, error) {
+	fmt.Println("wea re in verify")
 	tokenParsed, err := jwt.ParseWithClaims(
 		token,
 		&model.UserClaims{},
@@ -56,13 +58,16 @@ func (t *token) VerifyToken(_ context.Context, token string) (*model.UserClaims,
 		},
 	)
 	if err != nil {
+		fmt.Println("err is ", err)
 		return nil, errors.Errorf("invalid token: %s", err.Error())
 	}
+	fmt.Println("verify token", token, tokenParsed.Claims)
 
 	claims, ok := tokenParsed.Claims.(*model.UserClaims)
 	if !ok {
 		return nil, errors.New("invalid token claims")
 	}
+	fmt.Println("verify claims", claims)
 
 	return claims, nil
 }

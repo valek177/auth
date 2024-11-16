@@ -3,6 +3,7 @@ package access
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"google.golang.org/grpc/metadata"
@@ -20,6 +21,7 @@ const (
 func (i *Implementation) Check(ctx context.Context, req *access_v1.CheckRequest) (
 	*emptypb.Empty, error,
 ) {
+	fmt.Println("we are in check api!")
 	err := validateCheck(req)
 	if err != nil {
 		return nil, err
@@ -43,7 +45,7 @@ func (i *Implementation) Check(ctx context.Context, req *access_v1.CheckRequest)
 
 	hasAccess, err := i.accessService.Check(ctx, accessToken, req.GetEndpointAddress())
 	if err != nil {
-		return nil, errors.New("unable to check access")
+		return nil, fmt.Errorf("check access error: %v", err.Error())
 	}
 	if !hasAccess {
 		return nil, errors.New("access denied")
