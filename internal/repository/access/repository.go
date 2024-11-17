@@ -3,7 +3,6 @@ package log
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4"
@@ -31,6 +30,7 @@ func NewRepository(db db.Client) repository.AccessRepository {
 	return &repo{db: db}
 }
 
+// GetAccessRuleByEndpoint returns EndpointAccessRule by endpoint
 func (r *repo) GetAccessRuleByEndpoint(ctx context.Context, endpoint string) (
 	*model.EndpointAccessRule, error,
 ) {
@@ -50,17 +50,14 @@ func (r *repo) GetAccessRuleByEndpoint(ctx context.Context, endpoint string) (
 	}
 
 	var rules []*repoModel.AccessRule
+
 	err = r.db.DB().ScanAllContext(ctx, &rules, q, args...)
 	if err != nil {
-		fmt.Println("err in scan", err)
-		fmt.Println("rules", rules)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errors.New("access rules not found")
 		}
 		return nil, err
 	}
-	fmt.Println("err in scan", err)
-	fmt.Println("rules", rules)
 
 	return converter.ToEndpointAccessRuleFromRepo(endpoint, rules), nil
 }

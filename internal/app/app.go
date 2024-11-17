@@ -157,7 +157,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		return err
 	}
 
-	creds, err := credentials.NewServerTLSFromFile(grpcCfg.TlsCertFile(), grpcCfg.TlsKeyFile())
+	creds, err := credentials.NewServerTLSFromFile(grpcCfg.TLSCertFile(), grpcCfg.TLSKeyFile())
 	if err != nil {
 		return err
 	}

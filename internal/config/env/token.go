@@ -9,13 +9,14 @@ import (
 )
 
 const (
-	refreshTokenExpTimeName   = "REFRESH_TOKEN_EXPIRATION_TIME"
-	refreshTokenSecretKeyName = "REFRESH_TOKEN_SECRET_KEY"
+	refreshTokenExpTimeName   = "REFRESH_TOKEN_EXPIRATION_TIME" //nolint:gosec
+	refreshTokenSecretKeyName = "REFRESH_TOKEN_SECRET_KEY"      //nolint:gosec
 
-	accessTokenExpTimeName   = "ACCESS_TOKEN_EXPIRATION_TIME"
-	accessTokenSecretKeyName = "ACCESS_TOKEN_SECRET_KEY"
+	accessTokenExpTimeName   = "ACCESS_TOKEN_EXPIRATION_TIME" //nolint:gosec
+	accessTokenSecretKeyName = "ACCESS_TOKEN_SECRET_KEY"      //nolint:gosec
 )
 
+// TokenConfig is interface for token config
 type TokenConfig interface {
 	ExpTime() time.Duration
 	Secret() []byte
@@ -26,11 +27,13 @@ type tokenConfig struct {
 	secret  []byte
 }
 
+// NewRefreshTokenConfig returns token config for refresh token
 func NewRefreshTokenConfig() (TokenConfig, error) {
 	expTimeStr := os.Getenv(refreshTokenExpTimeName)
 	if expTimeStr == "" {
 		return nil, errors.New("refresh token expiration time not found")
 	}
+
 	expTime, err := strconv.Atoi(expTimeStr)
 	if err != nil {
 		return nil, errors.New("unable to get refresh token expiration time")
@@ -47,11 +50,13 @@ func NewRefreshTokenConfig() (TokenConfig, error) {
 	}, nil
 }
 
+// NewAccessTokenConfig returns token config for access token
 func NewAccessTokenConfig() (TokenConfig, error) {
 	expTimeStr := os.Getenv(accessTokenExpTimeName)
 	if expTimeStr == "" {
 		return nil, errors.New("access token expiration time not found")
 	}
+
 	expTime, err := strconv.Atoi(expTimeStr)
 	if err != nil {
 		return nil, errors.New("unable to get access token expiration time")
@@ -68,10 +73,12 @@ func NewAccessTokenConfig() (TokenConfig, error) {
 	}, nil
 }
 
+// ExpTime return expiration time for token
 func (cfg *tokenConfig) ExpTime() time.Duration {
 	return cfg.expTime
 }
 
+// Secret return secret for token
 func (cfg *tokenConfig) Secret() []byte {
 	return cfg.secret
 }

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -12,6 +11,7 @@ import (
 	"github.com/valek177/auth/internal/model"
 )
 
+// Token is interface for token
 type Token interface {
 	GenerateToken(_ context.Context, user *model.User) (string, error)
 	VerifyToken(_ context.Context, token string) (*model.UserClaims, error)
@@ -22,6 +22,7 @@ type token struct {
 	secret  []byte
 }
 
+// NewToken returns new token object
 func NewToken(cfg config.TokenConfig) *token {
 	return &token{
 		expTime: cfg.ExpTime(),
@@ -29,6 +30,7 @@ func NewToken(cfg config.TokenConfig) *token {
 	}
 }
 
+// GenerateToken returns new token string
 func (t *token) GenerateToken(_ context.Context, user *model.User) (string, error) {
 	claims := model.UserClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -43,8 +45,8 @@ func (t *token) GenerateToken(_ context.Context, user *model.User) (string, erro
 	return token.SignedString(t.secret)
 }
 
+// VerifyToken returns user claims by token
 func (t *token) VerifyToken(_ context.Context, token string) (*model.UserClaims, error) {
-	fmt.Println("wea re in verify")
 	tokenParsed, err := jwt.ParseWithClaims(
 		token,
 		&model.UserClaims{},
@@ -58,16 +60,13 @@ func (t *token) VerifyToken(_ context.Context, token string) (*model.UserClaims,
 		},
 	)
 	if err != nil {
-		fmt.Println("err is ", err)
 		return nil, errors.Errorf("invalid token: %s", err.Error())
 	}
-	fmt.Println("verify token", token, tokenParsed.Claims)
 
 	claims, ok := tokenParsed.Claims.(*model.UserClaims)
 	if !ok {
 		return nil, errors.New("invalid token claims")
 	}
-	fmt.Println("verify claims", claims)
 
 	return claims, nil
 }

@@ -21,7 +21,6 @@ const (
 func (i *Implementation) Check(ctx context.Context, req *access_v1.CheckRequest) (
 	*emptypb.Empty, error,
 ) {
-	fmt.Println("we are in check api!")
 	err := validateCheck(req)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	passwordLib "github.com/valek177/auth/internal/password"
 )
 
+// Login returns refresh token for username & password
 func (s *serv) Login(ctx context.Context, username, password string) (string, error) {
 	user, err := s.userRepository.GetUserByName(ctx, username)
 	if err != nil {

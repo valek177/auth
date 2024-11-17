@@ -6,6 +6,7 @@ import (
 	"github.com/valek177/auth/grpc/pkg/auth_v1"
 )
 
+// GetAccessToken returns access token by refresh token
 func (i *Implementation) GetAccessToken(ctx context.Context, req *auth_v1.GetAccessTokenRequest) (
 	*auth_v1.GetAccessTokenResponse, error,
 ) {

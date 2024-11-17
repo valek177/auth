@@ -20,8 +20,8 @@ func Load(path string) error {
 // GRPCConfig interface for GRPCConfig
 type GRPCConfig interface {
 	Address() string
-	TlsCertFile() string
-	TlsKeyFile() string
+	TLSCertFile() string
+	TLSKeyFile() string
 }
 
 // PGConfig interface for PGConfig
@@ -46,6 +46,7 @@ type KafkaConsumerConfig interface {
 	Config() *sarama.Config
 }
 
+// TokenConfig interface for TokenConfig
 type TokenConfig interface {
 	ExpTime() time.Duration
 	Secret() []byte

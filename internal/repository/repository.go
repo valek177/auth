@@ -15,6 +15,7 @@ type UserRepository interface {
 	DeleteUser(ctx context.Context, id int64) error
 }
 
+// AccessRepository is interface for access repository
 type AccessRepository interface {
 	GetAccessRuleByEndpoint(ctx context.Context, endpoint string) (
 		*model.EndpointAccessRule, error,

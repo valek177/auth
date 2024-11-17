@@ -133,6 +133,7 @@ func (s *serviceProvider) SwaggerConfig() (config.SwaggerConfig, error) {
 	return s.swaggerConfig, nil
 }
 
+// TokenAccessConfig returns token access config
 func (s *serviceProvider) TokenAccessConfig() (config.TokenConfig, error) {
 	if s.tokenAccessConfig == nil {
 		cfg, err := env.NewAccessTokenConfig()
@@ -146,6 +147,7 @@ func (s *serviceProvider) TokenAccessConfig() (config.TokenConfig, error) {
 	return s.tokenAccessConfig, nil
 }
 
+// TokenRefreshConfig returns token refresh config
 func (s *serviceProvider) TokenRefreshConfig() (config.TokenConfig, error) {
 	if s.tokenRefreshConfig == nil {
 		cfg, err := env.NewRefreshTokenConfig()
@@ -260,9 +262,10 @@ func (s *serviceProvider) RedisClient() (cache.RedisClient, error) {
 	return s.redisClient, nil
 }
 
+// TokenRefresh returns refresh token
 func (s *serviceProvider) TokenRefresh() (utils.Token, error) {
 	if s.tokenRefresh == nil {
-		cfg, err := s.TokenAccessConfig()
+		cfg, err := s.TokenRefreshConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -272,16 +275,17 @@ func (s *serviceProvider) TokenRefresh() (utils.Token, error) {
 	return s.tokenRefresh, nil
 }
 
+// TokenAccess returns access token
 func (s *serviceProvider) TokenAccess() (utils.Token, error) {
-	if s.tokenRefresh == nil {
+	if s.tokenAccess == nil {
 		cfg, err := s.TokenAccessConfig()
 		if err != nil {
 			return nil, err
 		}
-		s.tokenRefresh = utils.NewToken(cfg)
+		s.tokenAccess = utils.NewToken(cfg)
 	}
 
-	return s.tokenRefresh, nil
+	return s.tokenAccess, nil
 }
 
 // UserRedisRepository returns redis repository
@@ -330,6 +334,7 @@ func (s *serviceProvider) LogRepository(ctx context.Context) (repository.LogRepo
 	return s.logRepository, nil
 }
 
+// AccessRepository returns access repository
 func (s *serviceProvider) AccessRepository(ctx context.Context) (
 	repository.AccessRepository, error,
 ) {

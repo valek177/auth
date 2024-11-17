@@ -6,6 +6,7 @@ import (
 	"github.com/valek177/auth/grpc/pkg/auth_v1"
 )
 
+// GetRefreshToken returns refresh token by old refresh token
 func (i *Implementation) GetRefreshToken(ctx context.Context, req *auth_v1.GetRefreshTokenRequest) (
 	*auth_v1.GetRefreshTokenResponse, error,
 ) {

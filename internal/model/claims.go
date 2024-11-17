@@ -2,10 +2,7 @@ package model
 
 import "github.com/dgrijalva/jwt-go"
 
-const (
-	ExamplePath = "/user_v1.UserV1/Get"
-)
-
+// UserClaims is a model for user claims
 type UserClaims struct {
 	jwt.StandardClaims
 	Username string `json:"username"`

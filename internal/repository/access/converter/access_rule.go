@@ -5,6 +5,7 @@ import (
 	repoModel "github.com/valek177/auth/internal/repository/access/model"
 )
 
+// ToEndpointAccessRuleFromRepo converts rules from repoModel to EndpointAccessRule for endpoint
 func ToEndpointAccessRuleFromRepo(endpoint string, rules []*repoModel.AccessRule,
 ) *model.EndpointAccessRule {
 	if endpoint == "" {

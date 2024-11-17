@@ -14,8 +14,8 @@ var _ config.GRPCConfig = (*grpcConfig)(nil)
 const (
 	grpcHostEnvName    = "GRPC_HOST"
 	grpcPortEnvName    = "GRPC_PORT"
-	serviceTlsCertFile = "GRPC_TLS_CERT_FILE"
-	serviceTlsKeyFile  = "GRPC_TLS_KEY_FILE"
+	serviceTLSCertFile = "GRPC_TLS_CERT_FILE"
+	serviceTLSKeyFile  = "GRPC_TLS_KEY_FILE"
 )
 
 type grpcConfig struct {
@@ -37,12 +37,12 @@ func NewGRPCConfig() (*grpcConfig, error) {
 		return nil, errors.New("grpc port not found")
 	}
 
-	tlsServiceCertFile := os.Getenv(serviceTlsCertFile)
+	tlsServiceCertFile := os.Getenv(serviceTLSCertFile)
 	if tlsServiceCertFile == "" {
 		return nil, errors.New("grpc tls cert file not found")
 	}
 
-	tlsServiceKeyFile := os.Getenv(serviceTlsKeyFile)
+	tlsServiceKeyFile := os.Getenv(serviceTLSKeyFile)
 	if tlsServiceKeyFile == "" {
 		return nil, errors.New("grpc tls key file not found")
 	}
@@ -60,12 +60,12 @@ func (cfg *grpcConfig) Address() string {
 	return net.JoinHostPort(cfg.host, cfg.port)
 }
 
-// TlsCertFile returns path to TLS cert file from config
-func (cfg *grpcConfig) TlsCertFile() string {
+// TLSCertFile returns path to TLS cert file from config
+func (cfg *grpcConfig) TLSCertFile() string {
 	return cfg.tlsCertFile
 }
 
-// TlsKeyFile returns path to TLS key file from config
-func (cfg *grpcConfig) TlsKeyFile() string {
+// TLSKeyFile returns path to TLS key file from config
+func (cfg *grpcConfig) TLSKeyFile() string {
 	return cfg.tlsKeyFile
 }
