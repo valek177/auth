@@ -3,27 +3,24 @@ package auth
 import (
 	"github.com/valek177/auth/internal/repository"
 	"github.com/valek177/auth/internal/service"
-	"github.com/valek177/platform-common/pkg/client/db"
+	"github.com/valek177/auth/internal/utils"
 )
 
 type serv struct {
-	authRepository  repository.AuthRepository
-	logRepository   repository.LogRepository
-	redisRepository repository.UserRedisRepository
-	txManager       db.TxManager
+	userRepository repository.UserRepository
+	tokenRefresh   utils.Token
+	tokenAccess    utils.Token
 }
 
 // NewService creates new service with settings
 func NewService(
-	authRepository repository.AuthRepository,
-	logRepository repository.LogRepository,
-	redisRepository repository.UserRedisRepository,
-	txManager db.TxManager,
+	userRepository repository.UserRepository,
+	tokenRefresh utils.Token,
+	tokenAccess utils.Token,
 ) service.AuthService {
 	return &serv{
-		authRepository:  authRepository,
-		logRepository:   logRepository,
-		redisRepository: redisRepository,
-		txManager:       txManager,
+		userRepository: userRepository,
+		tokenRefresh:   tokenRefresh,
+		tokenAccess:    tokenAccess,
 	}
 }

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/joho/godotenv"
 )
@@ -18,6 +20,8 @@ func Load(path string) error {
 // GRPCConfig interface for GRPCConfig
 type GRPCConfig interface {
 	Address() string
+	TLSCertFile() string
+	TLSKeyFile() string
 }
 
 // PGConfig interface for PGConfig
@@ -40,4 +44,10 @@ type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string
 	Config() *sarama.Config
+}
+
+// TokenConfig interface for TokenConfig
+type TokenConfig interface {
+	ExpTime() time.Duration
+	Secret() []byte
 }

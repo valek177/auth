@@ -6,12 +6,20 @@ import (
 	"github.com/valek177/auth/internal/model"
 )
 
-// AuthRepository is interface for user logic
-type AuthRepository interface {
+// UserRepository is interface for user logic
+type UserRepository interface {
 	CreateUser(ctx context.Context, newUser *model.NewUser) (int64, error)
 	GetUser(ctx context.Context, id int64) (*model.User, error)
+	GetUserByName(ctx context.Context, username string) (*model.User, error)
 	UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error
 	DeleteUser(ctx context.Context, id int64) error
+}
+
+// AccessRepository is interface for access repository
+type AccessRepository interface {
+	GetAccessRuleByEndpoint(ctx context.Context, endpoint string) (
+		*model.EndpointAccessRule, error,
+	)
 }
 
 // LogRepository is interface for logging user actions

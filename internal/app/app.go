@@ -13,9 +13,12 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/valek177/auth/grpc/pkg/access_v1"
+	"github.com/valek177/auth/grpc/pkg/auth_v1"
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
@@ -149,19 +152,41 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
+	grpcCfg, err := a.serviceProvider.GRPCConfig()
+	if err != nil {
+		return err
+	}
+
+	creds, err := credentials.NewServerTLSFromFile(grpcCfg.TLSCertFile(), grpcCfg.TLSKeyFile())
+	if err != nil {
+		return err
+	}
+
 	a.grpcServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor((interceptor.ValidateInterceptor)),
+		grpc.Creds(creds),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 
 	reflection.Register(a.grpcServer)
+
+	userImpl, err := a.serviceProvider.UserImpl(ctx)
+	if err != nil {
+		return err
+	}
 
 	authImpl, err := a.serviceProvider.AuthImpl(ctx)
 	if err != nil {
 		return err
 	}
 
-	user_v1.RegisterUserV1Server(a.grpcServer, authImpl)
+	accessImpl, err := a.serviceProvider.AccessImpl(ctx)
+	if err != nil {
+		return err
+	}
+
+	user_v1.RegisterUserV1Server(a.grpcServer, userImpl)
+	auth_v1.RegisterAuthV1Server(a.grpcServer, authImpl)
+	access_v1.RegisterAccessV1Server(a.grpcServer, accessImpl)
 
 	return nil
 }

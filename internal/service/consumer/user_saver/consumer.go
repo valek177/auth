@@ -15,17 +15,17 @@ const (
 var _ def.ConsumerService = (*service)(nil)
 
 type service struct {
-	authRepository repository.AuthRepository
+	userRepository repository.UserRepository
 	consumer       kafka.Consumer
 }
 
 // NewService returns new consumer service
 func NewService(
-	authRepository repository.AuthRepository,
+	userRepository repository.UserRepository,
 	consumer kafka.Consumer,
 ) *service {
 	return &service{
-		authRepository: authRepository,
+		userRepository: userRepository,
 		consumer:       consumer,
 	}
 }

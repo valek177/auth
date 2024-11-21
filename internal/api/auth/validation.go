@@ -3,36 +3,28 @@ package auth
 import (
 	"github.com/pkg/errors"
 
-	"github.com/valek177/auth/grpc/pkg/user_v1"
+	"github.com/valek177/auth/grpc/pkg/auth_v1"
 )
 
-func validateCreateUser(req *user_v1.CreateUserRequest) error {
+func validateLogin(req *auth_v1.LoginRequest) error {
 	if req == nil {
-		return errors.New("unable to create user: empty request")
+		return errors.New("unable to login: empty request")
 	}
 
 	return nil
 }
 
-func validateDeleteUser(req *user_v1.DeleteUserRequest) error {
+func validateRefreshTokenRequest(req *auth_v1.GetRefreshTokenRequest) error {
 	if req == nil {
-		return errors.New("unable to delete user: empty request")
+		return errors.New("unable to get refresh token: empty request")
 	}
 
 	return nil
 }
 
-func validateUpdateUser(req *user_v1.UpdateUserRequest) error {
+func validateAccessTokenRequest(req *auth_v1.GetAccessTokenRequest) error {
 	if req == nil {
-		return errors.New("unable to update user: empty request")
-	}
-
-	return nil
-}
-
-func validateGetUser(req *user_v1.GetUserRequest) error {
-	if req == nil {
-		return errors.New("unable to get user: empty request")
+		return errors.New("unable to get access token: empty request")
 	}
 
 	return nil

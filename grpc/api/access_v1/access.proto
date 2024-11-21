@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package access_v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/valek177/auth/pkg/access_v1;access_v1";
+
+// AccessV1 is service for user access
+service AccessV1 {
+  // Check checks user permissions
+  rpc Check(CheckRequest) returns (google.protobuf.Empty);
+}
+// CheckRequest is a request message for check permissions
+message CheckRequest {
+  // Endpoint address
+  string endpoint_address = 1;
+}

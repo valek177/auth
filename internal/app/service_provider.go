@@ -7,18 +7,24 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 
-	"github.com/valek177/auth/internal/api/auth"
+	accessImpl "github.com/valek177/auth/internal/api/access"
+	authImpl "github.com/valek177/auth/internal/api/auth"
+	userImpl "github.com/valek177/auth/internal/api/user"
 	"github.com/valek177/auth/internal/client/kafka"
 	kafkaConsumer "github.com/valek177/auth/internal/client/kafka/consumer"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/config/env"
 	"github.com/valek177/auth/internal/repository"
-	authRepository "github.com/valek177/auth/internal/repository/auth"
+	accessRepository "github.com/valek177/auth/internal/repository/access"
 	logRepo "github.com/valek177/auth/internal/repository/log"
 	redisRepo "github.com/valek177/auth/internal/repository/redis"
+	userRepository "github.com/valek177/auth/internal/repository/user"
 	"github.com/valek177/auth/internal/service"
+	accessService "github.com/valek177/auth/internal/service/access"
 	authService "github.com/valek177/auth/internal/service/auth"
 	userSaverConsumer "github.com/valek177/auth/internal/service/consumer/user_saver"
+	userService "github.com/valek177/auth/internal/service/user"
+	"github.com/valek177/auth/internal/utils"
 	cache "github.com/valek177/platform-common/pkg/client/cache"
 	redisConfig "github.com/valek177/platform-common/pkg/client/cache/config"
 	redis "github.com/valek177/platform-common/pkg/client/cache/redis"
@@ -29,11 +35,13 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	httpConfig    config.HTTPConfig
-	redisConfig   redisConfig.RedisConfig
-	swaggerConfig config.SwaggerConfig
+	pgConfig           config.PGConfig
+	grpcConfig         config.GRPCConfig
+	httpConfig         config.HTTPConfig
+	redisConfig        redisConfig.RedisConfig
+	swaggerConfig      config.SwaggerConfig
+	tokenRefreshConfig config.TokenConfig
+	tokenAccessConfig  config.TokenConfig
 
 	kafkaConsumerConfig  config.KafkaConsumerConfig
 	consumer             kafka.Consumer
@@ -48,13 +56,21 @@ type serviceProvider struct {
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
 
-	authRepository  repository.AuthRepository
-	logRepository   repository.LogRepository
-	redisRepository repository.UserRedisRepository
+	tokenAccess  utils.Token
+	tokenRefresh utils.Token
 
-	authService service.AuthService
+	userRepository   repository.UserRepository
+	accessRepository repository.AccessRepository
+	logRepository    repository.LogRepository
+	redisRepository  repository.UserRedisRepository
 
-	authImpl *auth.Implementation
+	userService   service.UserService
+	authService   service.AuthService
+	accessService service.AccessService
+
+	userImpl   *userImpl.Implementation
+	authImpl   *authImpl.Implementation
+	accessImpl *accessImpl.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -115,6 +131,34 @@ func (s *serviceProvider) SwaggerConfig() (config.SwaggerConfig, error) {
 	}
 
 	return s.swaggerConfig, nil
+}
+
+// TokenAccessConfig returns token access config
+func (s *serviceProvider) TokenAccessConfig() (config.TokenConfig, error) {
+	if s.tokenAccessConfig == nil {
+		cfg, err := env.NewAccessTokenConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.tokenAccessConfig = cfg
+	}
+
+	return s.tokenAccessConfig, nil
+}
+
+// TokenRefreshConfig returns token refresh config
+func (s *serviceProvider) TokenRefreshConfig() (config.TokenConfig, error) {
+	if s.tokenRefreshConfig == nil {
+		cfg, err := env.NewRefreshTokenConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.tokenRefreshConfig = cfg
+	}
+
+	return s.tokenRefreshConfig, nil
 }
 
 // RedisConfig returns redis config
@@ -218,6 +262,32 @@ func (s *serviceProvider) RedisClient() (cache.RedisClient, error) {
 	return s.redisClient, nil
 }
 
+// TokenRefresh returns refresh token
+func (s *serviceProvider) TokenRefresh() (utils.Token, error) {
+	if s.tokenRefresh == nil {
+		cfg, err := s.TokenRefreshConfig()
+		if err != nil {
+			return nil, err
+		}
+		s.tokenRefresh = utils.NewToken(cfg)
+	}
+
+	return s.tokenRefresh, nil
+}
+
+// TokenAccess returns access token
+func (s *serviceProvider) TokenAccess() (utils.Token, error) {
+	if s.tokenAccess == nil {
+		cfg, err := s.TokenAccessConfig()
+		if err != nil {
+			return nil, err
+		}
+		s.tokenAccess = utils.NewToken(cfg)
+	}
+
+	return s.tokenAccess, nil
+}
+
 // UserRedisRepository returns redis repository
 func (s *serviceProvider) UserRedisRepository() (
 	repository.UserRedisRepository, error,
@@ -238,17 +308,17 @@ func (s *serviceProvider) UserRedisRepository() (
 	return s.redisRepository, nil
 }
 
-// AuthRepository returns new AuthRepository
-func (s *serviceProvider) AuthRepository(ctx context.Context) (repository.AuthRepository, error) {
-	if s.authRepository == nil {
+// UserRepository returns new UserRepository
+func (s *serviceProvider) UserRepository(ctx context.Context) (repository.UserRepository, error) {
+	if s.userRepository == nil {
 		dbClient, err := s.DBClient(ctx)
 		if err != nil {
 			return nil, err
 		}
-		s.authRepository = authRepository.NewRepository(dbClient)
+		s.userRepository = userRepository.NewRepository(dbClient)
 	}
 
-	return s.authRepository, nil
+	return s.userRepository, nil
 }
 
 // LogRepository returns new LogRepository
@@ -264,10 +334,25 @@ func (s *serviceProvider) LogRepository(ctx context.Context) (repository.LogRepo
 	return s.logRepository, nil
 }
 
-// AuthService returns new AuthService
-func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService, error) {
-	if s.authService == nil {
-		authRepo, err := s.AuthRepository(ctx)
+// AccessRepository returns access repository
+func (s *serviceProvider) AccessRepository(ctx context.Context) (
+	repository.AccessRepository, error,
+) {
+	if s.accessRepository == nil {
+		dbClient, err := s.DBClient(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.accessRepository = accessRepository.NewRepository(dbClient)
+	}
+
+	return s.accessRepository, nil
+}
+
+// UserService returns new UserService
+func (s *serviceProvider) UserService(ctx context.Context) (service.UserService, error) {
+	if s.userService == nil {
+		userRepo, err := s.UserRepository(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -283,31 +368,99 @@ func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService,
 		if err != nil {
 			return nil, err
 		}
+		s.userService = userService.NewService(
+			userRepo, logRepo, redisRepo, txManager,
+		)
+	}
+
+	return s.userService, nil
+}
+
+// AuthService returns new AuthService
+func (s *serviceProvider) AuthService(ctx context.Context) (service.AuthService, error) {
+	if s.authService == nil {
+		userRepo, err := s.UserRepository(ctx)
+		if err != nil {
+			return nil, err
+		}
+		tokenAccess, err := s.TokenAccess()
+		if err != nil {
+			return nil, err
+		}
+		tokenRefresh, err := s.TokenRefresh()
+		if err != nil {
+			return nil, err
+		}
 		s.authService = authService.NewService(
-			authRepo, logRepo, redisRepo, txManager,
+			userRepo,
+			tokenRefresh,
+			tokenAccess,
 		)
 	}
 
 	return s.authService, nil
 }
 
+// AccessService returns new AccessService
+func (s *serviceProvider) AccessService(ctx context.Context) (service.AccessService, error) {
+	if s.accessService == nil {
+		accessRepo, err := s.AccessRepository(ctx)
+		if err != nil {
+			return nil, err
+		}
+		tokenAccess, err := s.TokenAccess()
+		if err != nil {
+			return nil, err
+		}
+		s.accessService = accessService.NewService(accessRepo, tokenAccess)
+	}
+
+	return s.accessService, nil
+}
+
+// UserImpl returns new User Service implementation
+func (s *serviceProvider) UserImpl(ctx context.Context) (*userImpl.Implementation, error) {
+	if s.userImpl == nil {
+		userServ, err := s.UserService(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.userImpl = userImpl.NewImplementation(userServ)
+	}
+
+	return s.userImpl, nil
+}
+
 // AuthImpl returns new Auth Service implementation
-func (s *serviceProvider) AuthImpl(ctx context.Context) (*auth.Implementation, error) {
+func (s *serviceProvider) AuthImpl(ctx context.Context) (*authImpl.Implementation, error) {
 	if s.authImpl == nil {
 		authServ, err := s.AuthService(ctx)
 		if err != nil {
 			return nil, err
 		}
-		s.authImpl = auth.NewImplementation(authServ)
+		s.authImpl = authImpl.NewImplementation(authServ)
 	}
 
 	return s.authImpl, nil
 }
 
+// AccessImpl returns new Access Service implementation
+func (s *serviceProvider) AccessImpl(ctx context.Context) (*accessImpl.Implementation, error) {
+	if s.accessImpl == nil {
+		accessServ, err := s.AccessService(ctx)
+		if err != nil {
+			return nil, err
+		}
+		s.accessImpl = accessImpl.NewImplementation(accessServ)
+	}
+
+	return s.accessImpl, nil
+}
+
 // UserSaverConsumer returns user consumer service
 func (s *serviceProvider) UserSaverConsumer(ctx context.Context) (service.ConsumerService, error) {
 	if s.userSaverConsumer == nil {
-		authRepo, err := s.AuthRepository(ctx)
+		userRepo, err := s.UserRepository(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -316,7 +469,7 @@ func (s *serviceProvider) UserSaverConsumer(ctx context.Context) (service.Consum
 			return nil, err
 		}
 		s.userSaverConsumer = userSaverConsumer.NewService(
-			authRepo,
+			userRepo,
 			consumer,
 		)
 	}
