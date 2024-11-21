@@ -31,6 +31,7 @@ import (
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
 	"github.com/valek177/auth/internal/logger"
+
 	"github.com/valek177/auth/internal/metric"
 	"github.com/valek177/auth/internal/tracing"
 	_ "github.com/valek177/auth/statik" //nolint:revive
