@@ -4,14 +4,19 @@ import (
 	"context"
 	"flag"
 	"io"
-	"log"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/natefinch/lumberjack"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,6 +27,7 @@ import (
 	"github.com/valek177/auth/grpc/pkg/user_v1"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
+	"github.com/valek177/auth/internal/logger"
 	_ "github.com/valek177/auth/statik" //nolint:revive
 	"github.com/valek177/platform-common/pkg/closer"
 )
@@ -41,10 +47,11 @@ func init() {
 
 // App contains application object
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
-	swaggerServer   *http.Server
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	swaggerServer    *http.Server
+	prometheusServer *http.Server
 }
 
 // NewApp creates new App object
@@ -67,14 +74,14 @@ func (a *App) Run(ctx context.Context) error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(4)
+	wg.Add(5)
 
 	go func() {
 		defer wg.Done()
 
 		err := a.runGRPCServer()
 		if err != nil {
-			log.Fatalf("failed to run GRPC server: %v", err)
+			logger.FatalWithMsg("failed to run GRPC server: ", err)
 		}
 	}()
 
@@ -83,7 +90,7 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runHTTPServer()
 		if err != nil {
-			log.Fatalf("failed to run HTTP server: %v", err)
+			logger.FatalWithMsg("failed to run HTTP server: ", err)
 		}
 	}()
 
@@ -92,22 +99,30 @@ func (a *App) Run(ctx context.Context) error {
 
 		err := a.runSwaggerServer()
 		if err != nil {
-			log.Fatalf("failed to run Swagger server: %v", err)
+			logger.FatalWithMsg("failed to run Swagger server: ", err)
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
 
-		log.Printf("Started user saver consumer")
+		logger.Debug("Started user saver consumer")
 
 		consumer, err := a.serviceProvider.UserSaverConsumer(ctx)
 		if err != nil {
-			log.Printf("failed to create consumer: %s", err.Error())
+			logger.ErrorWithMsg("failed to create consumer: ", err)
 		}
 		err = consumer.RunConsumer(ctx)
 		if err != nil {
-			log.Printf("failed to run consumer: %s", err.Error())
+			logger.ErrorWithMsg("failed to run consumer: ", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		if err := a.runPrometheusServer(); err != nil {
+			logger.FatalWithMsg("failed to run prometheus HTTP server: ", err)
 		}
 	}()
 
@@ -123,6 +138,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.initPrometheusServer,
 	}
 
 	for _, f := range inits {
@@ -162,9 +178,17 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		return err
 	}
 
+	logger.Init(getCore(getAtomicLevel(grpcCfg.LogLevel())))
+
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.LogInterceptor,
+				interceptor.MetricsInterceptor,
+				interceptor.ValidateInterceptor,
+			),
+		),
 	)
 
 	reflection.Register(a.grpcServer)
@@ -251,12 +275,30 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initPrometheusServer(_ context.Context) error {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	prometheusCfg, err := a.serviceProvider.PrometheusConfig()
+	if err != nil {
+		return err
+	}
+
+	a.prometheusServer = &http.Server{
+		Addr:    prometheusCfg.Address(),
+		Handler: mux,
+		// ReadHeaderTimeout: time.Second * 5,
+	}
+
+	return nil
+}
+
 func (a *App) runGRPCServer() error {
 	grpcConfig, err := a.serviceProvider.GRPCConfig()
 	if err != nil {
 		return err
 	}
-	log.Printf("GRPC server is running on %s", grpcConfig.Address())
+	logger.Info("GRPC server is running on " + grpcConfig.Address())
 
 	list, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
@@ -276,7 +318,7 @@ func (a *App) runHTTPServer() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("HTTP server is running on %s", httpConfig.Address())
+	logger.Info("HTTP server is running on " + httpConfig.Address())
 
 	err = a.httpServer.ListenAndServe()
 	if err != nil {
@@ -292,7 +334,7 @@ func (a *App) runSwaggerServer() error {
 		return err
 	}
 
-	log.Printf("Swagger server is running on %s", cfg.Address())
+	logger.Info("Swagger server is running on " + cfg.Address())
 
 	err = a.swaggerServer.ListenAndServe()
 	if err != nil {
@@ -304,7 +346,7 @@ func (a *App) runSwaggerServer() error {
 
 func serveSwaggerFile(path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		log.Printf("Serving swagger file: %s", path)
+		logger.Debug("Serving swagger file: " + path)
 
 		statikFs, err := fs.New()
 		if err != nil {
@@ -312,7 +354,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Open swagger file: %s", path)
+		logger.Debug("Open swagger file: " + path)
 
 		file, err := statikFs.Open(path)
 		if err != nil {
@@ -323,7 +365,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			_ = file.Close()
 		}()
 
-		log.Printf("Read swagger file: %s", path)
+		logger.Debug("Read swagger file: " + path)
 
 		content, err := io.ReadAll(file)
 		if err != nil {
@@ -331,7 +373,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Write swagger file: %s", path)
+		logger.Debug("Write swagger file: " + path)
 
 		w.Header().Set("Content-Type", "application/json")
 		_, err = w.Write(content)
@@ -340,6 +382,56 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Served swagger file: %s", path)
+		logger.Debug("Served swagger file: " + path)
 	}
+}
+
+func (a *App) runPrometheusServer() error {
+	cfg, err := a.serviceProvider.PrometheusConfig()
+	if err != nil {
+		return err
+	}
+	logger.Info("Prometheus server is running on " + cfg.Address())
+
+	err = a.prometheusServer.ListenAndServe()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getCore(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.AddSync(os.Stdout)
+
+	file := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   "logs/app.log",
+		MaxSize:    10, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, // days
+	})
+
+	productionCfg := zap.NewProductionEncoderConfig()
+	productionCfg.TimeKey = "timestamp"
+	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	developmentCfg := zap.NewDevelopmentEncoderConfig()
+	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+	return zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, stdout, level),
+		zapcore.NewCore(fileEncoder, file, level),
+	)
+}
+
+func getAtomicLevel(logLevel string) zap.AtomicLevel {
+	var level zapcore.Level
+	if err := level.Set(logLevel); err != nil {
+		logger.FatalWithMsg("failed to set log level: ", err)
+	}
+
+	return zap.NewAtomicLevelAt(level)
 }

@@ -2,11 +2,12 @@ package consumer
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/IBM/sarama"
 	"github.com/pkg/errors"
+
+	"github.com/valek177/auth/internal/logger"
 )
 
 type consumer struct {
@@ -52,6 +53,6 @@ func (c *consumer) consume(ctx context.Context, topicName string) error {
 			return ctx.Err()
 		}
 
-		log.Printf("rebalancing...\n")
+		logger.Debug("rebalancing...")
 	}
 }

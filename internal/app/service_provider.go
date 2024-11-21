@@ -42,6 +42,7 @@ type serviceProvider struct {
 	swaggerConfig      config.SwaggerConfig
 	tokenRefreshConfig config.TokenConfig
 	tokenAccessConfig  config.TokenConfig
+	prometheusConfig   config.PrometheusConfig
 
 	kafkaConsumerConfig  config.KafkaConsumerConfig
 	consumer             kafka.Consumer
@@ -187,6 +188,20 @@ func (s *serviceProvider) KafkaConsumerConfig() (config.KafkaConsumerConfig, err
 	}
 
 	return s.kafkaConsumerConfig, nil
+}
+
+// PrometheusConfig returns prometheus config
+func (s *serviceProvider) PrometheusConfig() (config.PrometheusConfig, error) {
+	if s.prometheusConfig == nil {
+		cfg, err := env.NewPrometheusConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.prometheusConfig = cfg
+	}
+
+	return s.prometheusConfig, nil
 }
 
 // DBClient returns new db client

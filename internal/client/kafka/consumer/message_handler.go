@@ -2,9 +2,11 @@ package consumer
 
 import (
 	"context"
-	"log"
 
 	"github.com/IBM/sarama"
+	"go.uber.org/zap"
+
+	"github.com/valek177/auth/internal/logger"
 )
 
 // Handler is a func for Handler
@@ -40,15 +42,19 @@ func (c *GroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim s
 		select {
 		case message, ok := <-claim.Messages():
 			if !ok {
-				log.Printf("message channel was closed\n")
+				logger.Debug("message channel was closed\n")
 				return nil
 			}
 
-			log.Printf("message claimed: value = %s, timestamp = %v, topic = %s\n", string(message.Value), message.Timestamp, message.Topic)
+			logger.Debug("message claimed",
+				zap.String("message", string(message.Value)),
+				zap.Time("ts", message.Timestamp),
+				zap.String("topic", message.Topic),
+			)
 
 			err := c.msgHandler(session.Context(), message)
 			if err != nil {
-				log.Printf("error handling message: %v\n", err)
+				logger.ErrorWithMsg("error handling message: ", err)
 				continue
 			}
 
@@ -58,7 +64,7 @@ func (c *GroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim s
 		// В противном случае возникнет `ErrRebalanceInProgress` или `read tcp <ip>:<port>: i/o timeout` при перебалансировке кафки. см.:
 		// https://github.com/IBM/sarama/issues/1192
 		case <-session.Context().Done():
-			log.Printf("session context done\n")
+			logger.Debug("session context done")
 			return nil
 		}
 	}

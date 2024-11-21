@@ -4,6 +4,7 @@ volumes:
   postgres_volume_local:
   postgres_volume_prod:
   redis-data:
+  prometheus_data:
 
 services:
   pg-local:
@@ -121,3 +122,12 @@ services:
       - "8082:8080" # порт для клиентских соединений Kafka UI
     environment:
       DYNAMIC_CONFIG_ENABLED: true
+
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    ports:
+      - "9099:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus

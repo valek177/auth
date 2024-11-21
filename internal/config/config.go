@@ -22,6 +22,7 @@ type GRPCConfig interface {
 	Address() string
 	TLSCertFile() string
 	TLSKeyFile() string
+	LogLevel() string
 }
 
 // PGConfig interface for PGConfig
@@ -50,4 +51,9 @@ type KafkaConsumerConfig interface {
 type TokenConfig interface {
 	ExpTime() time.Duration
 	Secret() []byte
+}
+
+// PrometheusConfig interface for PrometheusConfig
+type PrometheusConfig interface {
+	Address() string
 }
