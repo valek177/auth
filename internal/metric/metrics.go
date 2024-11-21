@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	namespace = "auth_space"
-	appName   = "auth_app"
+	namespace = "my_space"
+	appName   = "my_app"
 )
 
 type Metrics struct {

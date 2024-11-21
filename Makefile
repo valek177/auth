@@ -132,3 +132,14 @@ grpc-load-test:
 		--total 3000  \
 		--cacert tls/service.pem \
 		localhost:50050
+
+grpc-error-load-test:
+	/home/valek/ghz/ghz/cmd/ghz/main \
+		--proto grpc/api/user_v1/user.proto \
+		--import-paths vendor.protogen/ \
+		--call user_v1.UserV1.GetUser \
+		--data '{"id": 0}' \
+		--rps 100 \
+		--total 3000 \
+		--cacert tls/service.pem \
+		localhost:50051
