@@ -15,12 +15,13 @@ func (i *Implementation) Login(ctx context.Context, req *auth_v1.LoginRequest) (
 		return nil, err
 	}
 
-	refreshToken, err := i.authService.Login(ctx, req.Username, req.Password)
+	refreshToken, accessToken, err := i.authService.Login(ctx, req.Username, req.Password)
 	if err != nil {
 		return nil, err
 	}
 
 	return &auth_v1.LoginResponse{
 		RefreshToken: refreshToken,
+		AccessToken:  accessToken,
 	}, nil
 }

@@ -4,33 +4,48 @@ package auth_v1;
 
 option go_package = "github.com/valek177/auth/grpc/pkg/auth_v1;auth_v1";
 
+// AuthV1 is service for authentication control
 service AuthV1 {
+  // Login executes login logic
   rpc Login (LoginRequest) returns (LoginResponse);
+  // GetRefreshToken returns refresh token
   rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
+  // GetAccessToken returns access token
   rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
 }
 
+// LoginRequest is a request message for user login
 message LoginRequest {
+  // Username
   string username = 1;
+  // Password
   string password = 2;
 }
 
+// LoginResponse is a response message for user login
 message LoginResponse {
+  // Refresh token
   string refresh_token = 1;
+  // Access token
+  string access_token = 2;
 }
-
+// GetRefreshTokenRequest is a request message for refresh token
 message GetRefreshTokenRequest {
+  // Old refresh token
   string old_refresh_token = 1;
 }
-
+// GetRefreshTokenResponse is a response message for refresh token
 message GetRefreshTokenResponse {
+  // Refresh token
   string refresh_token = 1;
 }
-
+// GetAccessTokenRequest is a request message for access token
 message GetAccessTokenRequest {
+  // Refresh token
   string refresh_token = 1;
 }
-
+// GetAccessTokenResponse is a response message for access token
 message GetAccessTokenResponse {
+  // Access token
   string access_token = 1;
 }

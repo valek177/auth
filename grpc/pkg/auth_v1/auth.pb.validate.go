@@ -162,6 +162,8 @@ func (m *LoginResponse) validate(all bool) error {
 
 	// no validation rules for RefreshToken
 
+	// no validation rules for AccessToken
+
 	if len(errors) > 0 {
 		return LoginResponseMultiError(errors)
 	}

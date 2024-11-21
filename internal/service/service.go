@@ -16,7 +16,7 @@ type UserService interface {
 
 // AuthService is interface for auth logic on service
 type AuthService interface {
-	Login(ctx context.Context, username, password string) (string, error)
+	Login(ctx context.Context, username, password string) (string, string, error)
 	GetRefreshToken(ctx context.Context, oldRefreshToken string) (string, error)
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }
