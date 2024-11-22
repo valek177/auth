@@ -43,6 +43,7 @@ type serviceProvider struct {
 	tokenRefreshConfig config.TokenConfig
 	tokenAccessConfig  config.TokenConfig
 	prometheusConfig   config.PrometheusConfig
+	jaegerConfig       config.JaegerConfig
 
 	kafkaConsumerConfig  config.KafkaConsumerConfig
 	consumer             kafka.Consumer
@@ -202,6 +203,20 @@ func (s *serviceProvider) PrometheusConfig() (config.PrometheusConfig, error) {
 	}
 
 	return s.prometheusConfig, nil
+}
+
+// JaegerConfig returns jaeger config
+func (s *serviceProvider) JaegerConfig() (config.JaegerConfig, error) {
+	if s.jaegerConfig == nil {
+		cfg, err := env.NewJaegerConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		s.jaegerConfig = cfg
+	}
+
+	return s.jaegerConfig, nil
 }
 
 // DBClient returns new db client

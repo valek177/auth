@@ -127,11 +127,11 @@ grpc-load-test:
 		--proto grpc/api/user_v1/user.proto \
 		--import-paths vendor.protogen/ \
 		--call user_v1.UserV1.GetUser \
-		--data '{"id": 25}' \
+		--data '{"id": 36}' \
 		--rps 100 \
 		--total 3000  \
 		--cacert tls/service.pem \
-		localhost:50050
+		localhost:50061
 
 grpc-error-load-test:
 	/home/valek/ghz/ghz/cmd/ghz/main \
@@ -142,4 +142,4 @@ grpc-error-load-test:
 		--rps 100 \
 		--total 3000 \
 		--cacert tls/service.pem \
-		localhost:50051
+		localhost:50061

@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/opentracing/opentracing-go"
+
 	passwordLib "github.com/valek177/auth/internal/password"
 )
 
 // Login returns refresh and access tokens for username & password
 func (s *serv) Login(ctx context.Context, username, password string) (string, string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "login (service)")
+	defer span.Finish()
+
 	user, err := s.userRepository.GetUserByName(ctx, username)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to get user %s", username)

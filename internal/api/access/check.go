@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/valek177/auth/grpc/pkg/access_v1"
 )
 
@@ -21,6 +22,9 @@ const (
 func (i *Implementation) Check(ctx context.Context, req *access_v1.CheckRequest) (
 	*emptypb.Empty, error,
 ) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "check access api")
+	defer span.Finish()
+
 	err := validateCheck(req)
 	if err != nil {
 		return nil, err

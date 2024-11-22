@@ -57,3 +57,11 @@ type TokenConfig interface {
 type PrometheusConfig interface {
 	Address() string
 }
+
+// JaegerConfig interface for JaegerConfig
+type JaegerConfig interface {
+	LocalAgentAddress() string
+	SamplerType() string
+	SamplerParam() float64
+	ServiceName() string
+}

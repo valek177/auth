@@ -12,7 +12,7 @@ const (
 	prometheusPortEnvName = "PROMETHEUS_PORT"
 )
 
-// SwaggerConfig interface for swagger config
+// PrometheusConfig interface for prometheus config
 type PrometheusConfig interface {
 	Address() string
 }

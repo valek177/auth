@@ -9,7 +9,9 @@ import (
 	"github.com/valek177/auth/internal/metric"
 )
 
-func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
 	metric.IncRequestCounter()
 
 	timeStart := time.Now()

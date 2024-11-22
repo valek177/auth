@@ -11,7 +11,9 @@ import (
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/natefinch/lumberjack"
+	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
@@ -28,6 +30,8 @@ import (
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
 	"github.com/valek177/auth/internal/logger"
+	"github.com/valek177/auth/internal/metric"
+	"github.com/valek177/auth/internal/tracing"
 	_ "github.com/valek177/auth/statik" //nolint:revive
 	"github.com/valek177/platform-common/pkg/closer"
 )
@@ -135,9 +139,11 @@ func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
 		a.initServiceProvider,
+		a.initJaegerTracing,
 		a.initGRPCServer,
 		a.initHTTPServer,
 		a.initSwaggerServer,
+		a.initMetrics,
 		a.initPrometheusServer,
 	}
 
@@ -186,6 +192,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.LogInterceptor,
 				interceptor.MetricsInterceptor,
+				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				interceptor.ValidateInterceptor,
 			),
 		),
@@ -275,6 +282,10 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	return nil
 }
 
+func (a *App) initMetrics(ctx context.Context) error {
+	return metric.Init(ctx)
+}
+
 func (a *App) initPrometheusServer(_ context.Context) error {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
@@ -287,10 +298,18 @@ func (a *App) initPrometheusServer(_ context.Context) error {
 	a.prometheusServer = &http.Server{
 		Addr:    prometheusCfg.Address(),
 		Handler: mux,
-		// ReadHeaderTimeout: time.Second * 5,
 	}
 
 	return nil
+}
+
+func (a *App) initJaegerTracing(_ context.Context) error {
+	cfg, err := a.serviceProvider.JaegerConfig()
+	if err != nil {
+		return err
+	}
+
+	return tracing.Init(cfg)
 }
 
 func (a *App) runGRPCServer() error {
