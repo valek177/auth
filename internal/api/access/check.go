@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/valek177/auth/grpc/pkg/access_v1"
 )
 
