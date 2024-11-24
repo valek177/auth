@@ -69,7 +69,11 @@ func TestDeleteUser(t *testing.T) {
 
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -82,7 +86,11 @@ func TestDeleteUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return nil
+				})
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -108,7 +116,11 @@ func TestDeleteUser(t *testing.T) {
 			err:  repoErr,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(repoErr)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return repoErr
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -131,7 +143,11 @@ func TestDeleteUser(t *testing.T) {
 			err:  fmt.Errorf("redis delete user error"),
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -140,8 +156,11 @@ func TestDeleteUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(
-					errors.New("redis delete user error"))
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return errors.New("redis delete user error")
+				})
 				return mock
 			},
 			txManagerMock: txManagerFunc,
@@ -156,7 +175,11 @@ func TestDeleteUser(t *testing.T) {
 			err:  fmt.Errorf("create record on delete error"),
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -170,7 +193,11 @@ func TestDeleteUser(t *testing.T) {
 			},
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (
+					err error,
+				) {
+					return nil
+				})
 				return mock
 			},
 			txManagerMock: txManagerFunc,
