@@ -9,6 +9,7 @@ import (
 	"github.com/valek177/auth/internal/metric"
 )
 
+// MetricsInterceptor creates new interceptor for metrics
 func MetricsInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {

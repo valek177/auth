@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -296,8 +297,9 @@ func (a *App) initPrometheusServer(_ context.Context) error {
 	}
 
 	a.prometheusServer = &http.Server{
-		Addr:    prometheusCfg.Address(),
-		Handler: mux,
+		Addr:              prometheusCfg.Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: time.Second * 3,
 	}
 
 	return nil

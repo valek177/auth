@@ -12,6 +12,7 @@ const (
 	appName   = "auth_app"
 )
 
+// Metrics is a struct for metrics object
 type Metrics struct {
 	requestCounter        prometheus.Counter
 	responseCounter       *prometheus.CounterVec
@@ -20,6 +21,7 @@ type Metrics struct {
 
 var metrics *Metrics
 
+// Init initializes metrics object
 func Init(_ context.Context) error {
 	metrics = &Metrics{
 		requestCounter: promauto.NewCounter(
@@ -54,14 +56,17 @@ func Init(_ context.Context) error {
 	return nil
 }
 
+// IncRequestCounter increments request counter
 func IncRequestCounter() {
 	metrics.requestCounter.Inc()
 }
 
+// IncResponseCounter increments response counter
 func IncResponseCounter(status string, method string) {
 	metrics.responseCounter.WithLabelValues(status, method).Inc()
 }
 
+// HistogramResponseTimeObserve adds observations to histogram metric object
 func HistogramResponseTimeObserve(status string, time float64) {
 	metrics.histogramResponseTime.WithLabelValues(status).Observe(time)
 }

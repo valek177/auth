@@ -10,6 +10,7 @@ import (
 	"github.com/valek177/auth/internal/logger"
 )
 
+// LogInterceptor creates interceptor for logging
 func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {

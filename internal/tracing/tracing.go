@@ -6,6 +6,7 @@ import (
 	internalCfg "github.com/valek177/auth/internal/config"
 )
 
+// Init initializes new jaeger tracer
 func Init(jaegerCfg internalCfg.JaegerConfig) error {
 	cfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
