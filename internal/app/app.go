@@ -28,6 +28,7 @@ import (
 	"github.com/valek177/auth/grpc/pkg/access_v1"
 	"github.com/valek177/auth/grpc/pkg/auth_v1"
 	"github.com/valek177/auth/grpc/pkg/user_v1"
+	"github.com/valek177/auth/internal/circuitbreaker"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
 	"github.com/valek177/auth/internal/logger"
@@ -86,7 +87,7 @@ func (a *App) Run(ctx context.Context) error {
 	}()
 
 	wg := sync.WaitGroup{}
-	wg.Add(5)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -115,20 +116,20 @@ func (a *App) Run(ctx context.Context) error {
 		}
 	}()
 
-	go func() {
-		defer wg.Done()
+	// go func() {
+	// 	defer wg.Done()
 
-		logger.Debug("Started user saver consumer")
+	// 	logger.Debug("Started user saver consumer")
 
-		consumer, err := a.serviceProvider.UserSaverConsumer(ctx)
-		if err != nil {
-			logger.ErrorWithMsg("failed to create consumer: ", err)
-		}
-		err = consumer.RunConsumer(ctx)
-		if err != nil {
-			logger.ErrorWithMsg("failed to run consumer: ", err)
-		}
-	}()
+	// 	consumer, err := a.serviceProvider.UserSaverConsumer(ctx)
+	// 	if err != nil {
+	// 		logger.ErrorWithMsg("failed to create consumer: ", err)
+	// 	}
+	// 	err = consumer.RunConsumer(ctx)
+	// 	if err != nil {
+	// 		logger.ErrorWithMsg("failed to run consumer: ", err)
+	// 	}
+	// }()
 
 	go func() {
 		defer wg.Done()
@@ -193,12 +194,14 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	}
 
 	logger.Init(getCore(getAtomicLevel(grpcCfg.LogLevel())))
+	cb := circuitbreaker.NewCircuitBreaker()
 
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.LogInterceptor,
+				interceptor.NewCircuitBreakerInterceptor(cb).Unary,
 				interceptor.MetricsInterceptor,
 				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				interceptor.ValidateInterceptor,
@@ -293,6 +296,10 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 func (a *App) initMetrics(ctx context.Context) error {
 	return metric.Init(ctx)
 }
+
+// func (a *App) initCircuitBreaker(ctx context.Context) error {
+// 	return circuitBreaker.Init(ctx)
+// }
 
 func (a *App) initPrometheusServer(_ context.Context) error {
 	mux := http.NewServeMux()
