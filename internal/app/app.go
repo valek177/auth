@@ -28,7 +28,6 @@ import (
 	"github.com/valek177/auth/grpc/pkg/access_v1"
 	"github.com/valek177/auth/grpc/pkg/auth_v1"
 	"github.com/valek177/auth/grpc/pkg/user_v1"
-	"github.com/valek177/auth/internal/circuitbreaker"
 	"github.com/valek177/auth/internal/config"
 	"github.com/valek177/auth/internal/interceptor"
 	"github.com/valek177/auth/internal/logger"
@@ -194,14 +193,17 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	}
 
 	logger.Init(getCore(getAtomicLevel(grpcCfg.LogLevel())))
-	cb := circuitbreaker.NewCircuitBreaker()
+	// cb := circuitbreaker.NewCircuitBreaker()
+
+	// rateLimiter := rate_limiter.NewTokenBucketLimiter(ctx, 10, time.Second)
 
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(creds),
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.LogInterceptor,
-				interceptor.NewCircuitBreakerInterceptor(cb).Unary,
+				// interceptor.NewRateLimiterInterceptor(rateLimiter).Unary,
+				// interceptor.NewCircuitBreakerInterceptor(cb).Unary,
 				interceptor.MetricsInterceptor,
 				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
 				interceptor.ValidateInterceptor,
