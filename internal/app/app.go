@@ -42,6 +42,13 @@ var (
 	corsAllowedOriginsDefault = []string{"*"}
 	corsAllowedMethodsDefault = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	corsAllowedHeadersDefault = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
+
+	prometheusReadHeaderTimeout = time.Second * 3
+
+	loggerFilename        = "logs/app.log"
+	loggerMaxSizeMb       = 10
+	loggerMaxBackupsCount = 3
+	loggerMaxAgeDays      = 7
 )
 
 const corsAllowCredentialsDefault = true
@@ -299,7 +306,7 @@ func (a *App) initPrometheusServer(_ context.Context) error {
 	a.prometheusServer = &http.Server{
 		Addr:              prometheusCfg.Address(),
 		Handler:           mux,
-		ReadHeaderTimeout: time.Second * 3,
+		ReadHeaderTimeout: prometheusReadHeaderTimeout,
 	}
 
 	return nil
@@ -426,10 +433,10 @@ func getCore(level zap.AtomicLevel) zapcore.Core {
 	stdout := zapcore.AddSync(os.Stdout)
 
 	file := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "logs/app.log",
-		MaxSize:    10, // megabytes
-		MaxBackups: 3,
-		MaxAge:     7, // days
+		Filename:   loggerFilename,
+		MaxSize:    loggerMaxSizeMb,
+		MaxBackups: loggerMaxBackupsCount,
+		MaxAge:     loggerMaxAgeDays,
 	})
 
 	productionCfg := zap.NewProductionEncoderConfig()
