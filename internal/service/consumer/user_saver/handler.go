@@ -3,10 +3,11 @@ package user_saver
 import (
 	"context"
 	"encoding/json"
-	"log"
 
 	"github.com/IBM/sarama"
+	"go.uber.org/zap"
 
+	"github.com/valek177/auth/internal/logger"
 	"github.com/valek177/auth/internal/model"
 )
 
@@ -23,7 +24,7 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 		return err
 	}
 
-	log.Printf("Kafka user handler: user with id %d was created\n", id)
+	logger.Debug("Kafka user handler: user with id was created", zap.Int64("id", id))
 
 	return nil
 }

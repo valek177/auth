@@ -3,11 +3,16 @@ package user
 import (
 	"context"
 
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/valek177/auth/internal/converter"
 )
 
 // DeleteUser deletes user in repo
 func (s *serv) DeleteUser(ctx context.Context, id int64) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "delete user (service)")
+	defer span.Finish()
+
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 		errTx = s.userRepository.DeleteUser(ctx, id)

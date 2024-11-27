@@ -121,3 +121,25 @@ gen-cert:
 	openssl req -new -key tls/service.key -out tls/service.csr -config tls/certificate.conf
 	openssl x509 -req -in tls/service.csr -CA tls/ca.cert -CAkey tls/ca.key -CAcreateserial \
 		-out tls/service.pem -days 365 -sha256 -extfile tls/certificate.conf -extensions req_ext
+
+grpc-load-test:
+	/home/valek/ghz/ghz/cmd/ghz/main \
+		--proto grpc/api/user_v1/user.proto \
+		--import-paths vendor.protogen/ \
+		--call user_v1.UserV1.GetUser \
+		--data '{"id": 36}' \
+		--rps 100 \
+		--total 3000  \
+		--cacert tls/service.pem \
+		localhost:50061
+
+grpc-error-load-test:
+	/home/valek/ghz/ghz/cmd/ghz/main \
+		--proto grpc/api/user_v1/user.proto \
+		--import-paths vendor.protogen/ \
+		--call user_v1.UserV1.GetUser \
+		--data '{"id": 0}' \
+		--rps 100 \
+		--total 3000 \
+		--cacert tls/service.pem \
+		localhost:50061

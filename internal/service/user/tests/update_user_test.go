@@ -78,8 +78,16 @@ func TestUpdateUser(t *testing.T) {
 			err:  nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
-				mock.GetUserMock.Expect(ctx, id).Return(&model.User{}, nil)
+				mock.UpdateUserMock.Set(func(_ context.Context, _ *model.UpdateUserInfo) (
+					err error,
+				) {
+					return nil
+				})
+				mock.GetUserMock.Set(func(_ context.Context, _ int64) (
+					up1 *model.User, err error,
+				) {
+					return &model.User{}, nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -132,7 +140,11 @@ func TestUpdateUser(t *testing.T) {
 			err:  repoErr,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateUserMock.Expect(ctx, updateUser).Return(repoErr)
+				mock.UpdateUserMock.Set(func(_ context.Context, _ *model.UpdateUserInfo) (
+					err error,
+				) {
+					return repoErr
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -155,9 +167,16 @@ func TestUpdateUser(t *testing.T) {
 			err:  fmt.Errorf("auth update user error"),
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
-				mock.GetUserMock.Expect(ctx, id).Return(&model.User{},
-					errors.New("auth update user error"))
+				mock.UpdateUserMock.Set(func(_ context.Context, _ *model.UpdateUserInfo) (
+					err error,
+				) {
+					return nil
+				})
+				mock.GetUserMock.Set(func(_ context.Context, _ int64) (
+					up1 *model.User, err error,
+				) {
+					return &model.User{}, errors.New("auth update user error")
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -180,8 +199,16 @@ func TestUpdateUser(t *testing.T) {
 			err:  fmt.Errorf("redis delete user error"),
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
-				mock.GetUserMock.Expect(ctx, id).Return(&model.User{ID: id}, nil)
+				mock.UpdateUserMock.Set(func(_ context.Context, _ *model.UpdateUserInfo) (
+					err error,
+				) {
+					return nil
+				})
+				mock.GetUserMock.Set(func(_ context.Context, _ int64) (
+					up1 *model.User, err error,
+				) {
+					return &model.User{ID: id}, nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -191,8 +218,9 @@ func TestUpdateUser(t *testing.T) {
 			txManagerMock: txManagerFunc,
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, id).Return(
-					errors.New("redis delete user error"))
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (err error) {
+					return errors.New("redis delete user error")
+				})
 				return mock
 			},
 		},
@@ -254,8 +282,16 @@ func TestUpdateUser(t *testing.T) {
 			err:  fmt.Errorf("create record on update error"),
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.UpdateUserMock.Expect(ctx, updateUser).Return(nil)
-				mock.GetUserMock.Expect(ctx, id).Return(&model.User{}, nil)
+				mock.UpdateUserMock.Set(func(_ context.Context, _ *model.UpdateUserInfo) (
+					err error,
+				) {
+					return nil
+				})
+				mock.GetUserMock.Set(func(_ context.Context, _ int64) (
+					up1 *model.User, err error,
+				) {
+					return &model.User{}, nil
+				})
 				return mock
 			},
 			logRepositoryMock: func(mc *minimock.Controller) repository.LogRepository {
@@ -270,9 +306,15 @@ func TestUpdateUser(t *testing.T) {
 			txManagerMock: txManagerFunc,
 			redisRepositoryMock: func(mc *minimock.Controller) repository.UserRedisRepository {
 				mock := repoMocks.NewUserRedisRepositoryMock(mc)
-				mock.DeleteUserMock.Expect(ctx, 0).Return(nil)
-				mock.CreateUserMock.Expect(ctx, &model.User{}).Return(nil)
-				mock.SetExpireUserMock.Expect(ctx, 0).Return(nil)
+				mock.DeleteUserMock.Set(func(_ context.Context, _ int64) (err error) {
+					return nil
+				})
+				mock.CreateUserMock.Set(func(_ context.Context, _ *model.User) (err error) {
+					return nil
+				})
+				mock.SetExpireUserMock.Set(func(_ context.Context, _ int64) (err error) {
+					return nil
+				})
 				return mock
 			},
 		},

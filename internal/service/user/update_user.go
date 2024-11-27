@@ -3,12 +3,17 @@ package user
 import (
 	"context"
 
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/valek177/auth/internal/converter"
 	"github.com/valek177/auth/internal/model"
 )
 
 // UpdateUser updates user in repo
 func (s *serv) UpdateUser(ctx context.Context, updateUserInfo *model.UpdateUserInfo) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "update user (service)")
+	defer span.Finish()
+
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var errTx error
 

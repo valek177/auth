@@ -16,6 +16,7 @@ const (
 	grpcPortEnvName    = "GRPC_PORT"
 	serviceTLSCertFile = "GRPC_TLS_CERT_FILE"
 	serviceTLSKeyFile  = "GRPC_TLS_KEY_FILE"
+	logLevel           = "LOG_LEVEL"
 )
 
 type grpcConfig struct {
@@ -23,6 +24,7 @@ type grpcConfig struct {
 	port        string
 	tlsCertFile string
 	tlsKeyFile  string
+	logLevel    string
 }
 
 // NewGRPCConfig creates new grpcConfig
@@ -47,11 +49,17 @@ func NewGRPCConfig() (*grpcConfig, error) {
 		return nil, errors.New("grpc tls key file not found")
 	}
 
+	logLevel := os.Getenv(logLevel)
+	if logLevel == "" {
+		return nil, errors.New("log level not found")
+	}
+
 	return &grpcConfig{
 		host:        host,
 		port:        port,
 		tlsCertFile: tlsServiceCertFile,
 		tlsKeyFile:  tlsServiceKeyFile,
+		logLevel:    logLevel,
 	}, nil
 }
 
@@ -68,4 +76,9 @@ func (cfg *grpcConfig) TLSCertFile() string {
 // TLSKeyFile returns path to TLS key file from config
 func (cfg *grpcConfig) TLSKeyFile() string {
 	return cfg.tlsKeyFile
+}
+
+// LogLevel returns log level
+func (cfg *grpcConfig) LogLevel() string {
+	return cfg.logLevel
 }
