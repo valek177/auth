@@ -10,15 +10,20 @@ import (
 	rateLimiter "github.com/valek177/auth/internal/rate_limiter"
 )
 
+// RateLimiterInterceptor is a struct for rate limiter interceptor
 type RateLimiterInterceptor struct {
 	rateLimiter *rateLimiter.TokenBucketLimiter
 }
 
+// NewRateLimiterInterceptor creates new rate limiter interceptor
 func NewRateLimiterInterceptor(rateLimiter *rateLimiter.TokenBucketLimiter) *RateLimiterInterceptor {
 	return &RateLimiterInterceptor{rateLimiter: rateLimiter}
 }
 
-func (r *RateLimiterInterceptor) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+// Unary returns unary interface
+func (r *RateLimiterInterceptor) Unary(ctx context.Context, req interface{},
+	_ *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (interface{}, error) {
 	if !r.rateLimiter.Allow() {
 		return nil, status.Error(codes.ResourceExhausted, "too many requests")
 	}

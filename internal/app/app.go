@@ -79,7 +79,7 @@ func NewApp(ctx context.Context) (*App, error) {
 }
 
 // Run runs application
-func (a *App) Run(ctx context.Context) error {
+func (a *App) Run(_ context.Context) error {
 	defer func() {
 		closer.CloseAll()
 		closer.Wait()

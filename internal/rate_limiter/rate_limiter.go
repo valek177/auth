@@ -5,10 +5,12 @@ import (
 	"time"
 )
 
+// TokenBucketLimiter is a struct for token bucket limiter
 type TokenBucketLimiter struct {
 	tokenBucketCh chan struct{}
 }
 
+// NewTokenBucketLimiter creates new token bucket limiter
 func NewTokenBucketLimiter(ctx context.Context, limit int, period time.Duration) *TokenBucketLimiter {
 	limiter := &TokenBucketLimiter{
 		tokenBucketCh: make(chan struct{}, limit),
@@ -38,6 +40,7 @@ func (l *TokenBucketLimiter) startPeriodicReplenishment(ctx context.Context, int
 	}
 }
 
+// Allow returns token bucket channel state
 func (l *TokenBucketLimiter) Allow() bool {
 	select {
 	case <-l.tokenBucketCh:

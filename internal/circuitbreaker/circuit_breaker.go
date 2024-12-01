@@ -9,6 +9,7 @@ import (
 	"github.com/valek177/auth/internal/logger"
 )
 
+// NewCircuitBreaker creates new circuit breaker
 func NewCircuitBreaker() *gobreaker.CircuitBreaker {
 	return gobreaker.NewCircuitBreaker(gobreaker.Settings{
 		Name:        "my-service",

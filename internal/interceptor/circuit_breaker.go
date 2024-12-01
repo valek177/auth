@@ -9,17 +9,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// CircuitBreakerInterceptor is a struct for circuit breaker interceptor
 type CircuitBreakerInterceptor struct {
 	cb *gobreaker.CircuitBreaker
 }
 
+// NewCircuitBreakerInterceptor creates new circuit breaker interceptor
 func NewCircuitBreakerInterceptor(cb *gobreaker.CircuitBreaker) *CircuitBreakerInterceptor {
 	return &CircuitBreakerInterceptor{
 		cb: cb,
 	}
 }
 
-func (c *CircuitBreakerInterceptor) Unary(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+// Unary returns unary interface
+func (c *CircuitBreakerInterceptor) Unary(ctx context.Context, req interface{},
+	_ *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+) (interface{}, error) {
 	res, err := c.cb.Execute(func() (interface{}, error) {
 		return handler(ctx, req)
 	})
